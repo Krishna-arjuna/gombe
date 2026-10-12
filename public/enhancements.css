@@ -1,0 +1,25 @@
+/* Homepage gallery and creator-review additions */
+.hero{background:#d9c7a8}
+.hero-slides{position:absolute;inset:0;z-index:0;overflow:hidden}
+.hero-slide{position:absolute;inset:0;background:center/cover no-repeat;opacity:0;transform:scale(1.035);transition:opacity .9s ease,transform 6s ease}
+.hero-slide.active{opacity:1;transform:scale(1)}
+.hero-slide-1{background-image:url('images/gombe-hero.png')}
+.hero-slide-2{background-image:url('images/gombe-makers.png')}
+.hero-slide-3{background-image:url('images/gombe-flatlay.png')}
+.hero-controls{position:absolute;z-index:2;left:50%;bottom:27px;transform:translateX(-50%);display:flex;align-items:center;gap:13px}
+.hero-controls>button{border:0;background:transparent;padding:4px;font:19px/1 var(--serif)}
+.hero-controls>button:focus-visible,.hero-dots button:focus-visible{outline:2px solid var(--clay);outline-offset:4px}
+.hero-controls .hero-pause{font:12px/1 var(--mono);min-width:24px}
+.product-visual.has-photo>.doll{display:none}
+.product-photo{position:absolute;inset:0;z-index:1;width:100%;height:100%;object-fit:cover}
+.product-visual .product-tag{z-index:2}
+.hero-dots{display:flex;gap:7px}.hero-dots button{width:25px;height:2px;border:0;background:rgba(30,36,32,.35);padding:0;transition:background .25s,width .25s}.hero-dots button.active{background:var(--ink);width:38px}
+.blogger-section{padding:116px 8.7vw 124px;background:#f8f5ef}
+.blogger-heading{display:grid;grid-template-columns:1fr .74fr;gap:40px;align-items:end;margin-bottom:53px}
+.blogger-heading .eyebrow{grid-column:1/-1;margin-bottom:-5px}.blogger-heading h2{font:500 clamp(42px,4.8vw,68px)/.99 var(--serif);letter-spacing:-.055em;margin:0}.blogger-heading h2 em{font-weight:500}.blogger-heading>p:last-child{font-size:15px;line-height:1.55;max-width:340px;margin:0 0 3px}
+.blogger-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.blogger-card{min-height:321px;background:#fffdf9;border:1px solid var(--line);padding:22px;display:flex;flex-direction:column;transition:transform .25s,box-shadow .25s}.blogger-card:hover{transform:translateY(-5px);box-shadow:0 13px 25px rgba(38,36,29,.08)}
+.blogger-top{display:grid;grid-template-columns:38px 1fr;column-gap:10px;align-items:center}.blogger-avatar{grid-row:span 2;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font:10px var(--mono);letter-spacing:-.05em}.avatar-coral{background:#e5a08e}.avatar-blue{background:#9cc0c8}.avatar-green{background:#a5b89d}.avatar-gold{background:#e3bd5f}.blogger-top strong{font-size:12px;font-weight:600}.blogger-top small{font-size:10px;color:#69706a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.blogger-stars{grid-column:1/-1;color:#b65a32;font:10px var(--mono);letter-spacing:1px;margin-top:20px}.blogger-card blockquote{font:500 22px/1.17 var(--serif);letter-spacing:-.035em;margin:22px 0 auto}.blogger-card a{align-self:flex-start;margin-top:22px;padding-bottom:4px;border-bottom:1px solid;font:9px var(--mono);letter-spacing:.08em;text-transform:uppercase}.blogger-card a span{font-size:13px;margin-left:10px}
+@media(max-width:900px){.blogger-section{padding:88px 8vw}.blogger-heading{grid-template-columns:1fr 1fr}.blogger-grid{grid-template-columns:repeat(2,1fr)}.blogger-card{min-height:280px}.hero-controls{bottom:24px}}
+@media(max-width:600px){.hero-controls{bottom:24px}.hero-dots button{width:19px}.hero-dots button.active{width:28px}.blogger-section{padding:72px 6vw}.blogger-heading{display:block;margin-bottom:31px}.blogger-heading .eyebrow{margin-bottom:20px}.blogger-heading h2{font-size:42px}.blogger-heading>p:last-child{font-size:14px;margin-top:23px}.blogger-grid{grid-template-columns:1fr;gap:9px}.blogger-card{min-height:245px;padding:20px}.blogger-card blockquote{font-size:21px;margin-top:19px}}
+@media(prefers-reduced-motion:reduce){.hero-slide{transition:none;transform:none}.hero-slide.active{transform:none}}

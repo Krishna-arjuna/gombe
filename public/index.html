@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Gombe — hand-turned Channapatna dolls, made for a lifetime of stories." />
+    <title>Gombe — Channapatna, for every story</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="enhancements.css" />
+  </head>
+  <body>
+    <div class="announcement"><span>Made by hand in Channapatna, India</span><a href="#craft">Meet the makers <span aria-hidden="true">↗</span></a></div>
+    <header class="site-header" id="siteHeader">
+      <button class="mobile-menu-btn icon-button" aria-label="Open menu" data-open-menu><svg><use href="#i-menu"/></svg></button>
+      <nav class="main-nav" aria-label="Primary navigation"><a href="#collection">Shop</a><a href="#new">New arrivals</a><a href="#craft">Our craft</a><a href="#gifts">Gifts</a></nav>
+      <a class="wordmark" href="#top" aria-label="Gombe home">GOMBE<span></span></a>
+      <div class="header-actions">
+        <button class="icon-button search-trigger" aria-label="Search"><svg><use href="#i-search"/></svg></button>
+        <button class="icon-button account-trigger" aria-label="Log in or sign up"><svg><use href="#i-user"/></svg><span class="action-label">Log in</span></button>
+        <button class="icon-button wishlist-trigger" aria-label="Open wishlist"><svg><use href="#i-heart"/></svg><b class="count wishlist-count">0</b></button>
+        <button class="icon-button bag-trigger" aria-label="Open bag"><svg><use href="#i-bag"/></svg><b class="count bag-count">0</b></button>
+      </div>
+    </header>
+    <main id="top">
+      <section class="hero" aria-label="Gombe collection highlights">
+        <div class="hero-slides" aria-hidden="true"><div class="hero-slide hero-slide-1 active"></div><div class="hero-slide hero-slide-2"></div><div class="hero-slide hero-slide-3"></div></div>
+        <div class="hero-copy reveal">
+          <p class="eyebrow">THE CHANNAPATNA EDIT</p>
+          <h1>The art of <em>play,</em><br>made to keep.</h1>
+          <p class="hero-description">A new generation of hand-turned wooden dolls, alive with colour, character, and a little bit of wonder.</p>
+          <div class="hero-actions"><a class="button button-dark" href="#collection">Shop the collection <span>↘</span></a><button class="text-button custom-trigger">Create your own <span>↗</span></button></div>
+        </div>
+        <div class="hero-meta"><span id="heroCount">01 — 03</span><span>Made slowly. Loved loudly.</span></div>
+        <div class="hero-scroll"><span>SCROLL TO EXPLORE</span><i></i></div>
+        <div class="hero-controls" role="group" aria-label="Hero gallery controls"><button data-hero-prev aria-label="Previous image">←</button><div class="hero-dots"><button class="active" data-hero-slide="0" aria-label="Show image 1" aria-current="true"></button><button data-hero-slide="1" aria-label="Show image 2"></button><button data-hero-slide="2" aria-label="Show image 3"></button></div><button data-hero-next aria-label="Next image">→</button><button class="hero-pause" data-hero-pause aria-label="Pause automatic slideshow" aria-pressed="false">Ⅱ</button></div>
+      </section>
+
+      <section class="intro-section" id="craft">
+        <p class="eyebrow">A LIVING CRAFT</p>
+        <div class="intro-grid"><h2>Turned by hand,<br><em>told through play.</em></h2><div><p>Gombe begins in Channapatna, a small town where the whirr of a lathe has been part of everyday life for centuries.</p><a class="arrow-link" href="#story">Our story <span>→</span></a></div></div>
+        <div class="stamp-row"><span>NON-TOXIC<br>COLOURS</span><span>HAND-TURNED<br>WOOD</span><span>HEIRLOOM<br>QUALITY</span><span>WORLDWIDE<br>DELIVERY</span></div>
+      </section>
+
+      <section class="collection-section" id="collection">
+        <div class="section-head"><div><p class="eyebrow">THE COLLECTION</p><h2>Small worlds,<br><em>big imagination.</em></h2></div><p class="product-total" id="productTotal">06 pieces to meet</p></div>
+        <div class="catalog-toolbar">
+          <button class="filter-toggle"><svg><use href="#i-sliders"/></svg> Filter <span class="filter-active-count"></span></button>
+          <div class="filters" id="filterBar"><div class="filter-field"><label for="styleFilter">Style</label><select id="styleFilter"><option>All styles</option><option>Classic</option><option>Animal friends</option><option>Playful</option></select></div><div class="filter-field"><label for="ageFilter">For</label><select id="ageFilter"><option>All ages</option><option>1+ years</option><option>3+ years</option><option>6+ years</option></select></div><div class="filter-field"><label for="priceFilter">Price</label><select id="priceFilter"><option value="">Any price</option><option value="45">Under $45</option><option value="70">Under $70</option><option value="100">Under $100</option></select></div></div>
+          <button class="sort-button" id="sortButton">Sort: Featured <svg><use href="#i-chevron"/></svg></button>
+        </div>
+        <div class="product-grid" id="productGrid"></div>
+        <button class="load-more" id="loadMore">See more pieces <span>↓</span></button>
+      </section>
+
+      <section class="studio-section" id="new">
+        <div class="studio-image"><div class="image-badge">YOUR<br>STORY,<br>TURNED.</div></div>
+        <div class="studio-copy"><p class="eyebrow">GOMBE STUDIO</p><h2>A keepsake,<br><em>made just for them.</em></h2><p>Bring a little person, a favourite animal, or an impossible idea. Our master artisans will turn it into a one-of-a-kind wooden companion.</p><button class="button button-light custom-trigger">Begin a custom piece <span>↗</span></button><small>From sketch to doorstep in 4–6 weeks</small></div>
+      </section>
+
+      <section class="blogger-section" id="reviews">
+        <div class="blogger-heading"><p class="eyebrow">CREATOR NOTES</p><h2>Loved by people<br>who share <em>beautiful things.</em></h2><p>From unboxing to the little details, four creative voices on the Gombe experience.</p></div>
+        <div class="blogger-grid">
+          <article class="blogger-card"><div class="blogger-top"><span class="blogger-avatar avatar-coral">MK</span><div><strong>Mira Kapur</strong><small>Design & interiors writer</small></div><span class="blogger-stars">★★★★★</span></div><blockquote>“The ordering experience was as considered as the doll itself. It arrived in London beautifully wrapped and right on time.”</blockquote><a href="#reviews">@mirakapur <span>↗</span></a></article>
+          <article class="blogger-card"><div class="blogger-top"><span class="blogger-avatar avatar-blue">NC</span><div><strong>Nolan Choi</strong><small>Parenting editor</small></div><span class="blogger-stars">★★★★★</span></div><blockquote>“Gombe made a gift across continents feel incredibly personal. My nephew opened it before his birthday brunch.”</blockquote><a href="#reviews">@nolanchoi <span>↗</span></a></article>
+          <article class="blogger-card"><div class="blogger-top"><span class="blogger-avatar avatar-green">AL</span><div><strong>Amara Leigh</strong><small>Slow-living blogger</small></div><span class="blogger-stars">★★★★★</span></div><blockquote>“Useful tracking, thoughtful updates, and an object with real soul. This is what service should feel like.”</blockquote><a href="#reviews">@amaraleigh <span>↗</span></a></article>
+          <article class="blogger-card"><div class="blogger-top"><span class="blogger-avatar avatar-gold">RM</span><div><strong>Rhea Menon</strong><small>Culture & craft curator</small></div><span class="blogger-stars">★★★★★</span></div><blockquote>“Their studio team listened so closely to my custom request. The finished piece was more joyful than I imagined.”</blockquote><a href="#reviews">@rheamenon <span>↗</span></a></article>
+        </div>
+      </section>
+
+      <section class="manifesto" id="gifts"><p class="eyebrow">THE GOMBE WAY</p><h2>We believe the things children hold close should have a <em>past</em> — and a future.</h2><a class="arrow-link" href="#collection">Find a future favourite <span>→</span></a></section>
+
+      <section class="journal-section"><div class="section-head"><div><p class="eyebrow">FROM THE WORKSHOP</p><h2>Colour with<br><em>a conscience.</em></h2></div><a class="arrow-link" href="#story">Read our journal <span>→</span></a></div><div class="journal-cards"><article class="journal-card card-red"><span>01</span><h3>How we make<br>colour sing</h3><p>The bright, beautiful and natural world of vegetable dyes.</p><a href="#story">Read story <span>↗</span></a></article><article class="journal-card card-sand"><span>02</span><h3>Meet the hands<br>behind Gombe</h3><p>A morning with the artisans keeping a centuries-old craft alive.</p><a href="#story">Read story <span>↗</span></a></article><article class="journal-card card-blue"><span>03</span><h3>A forever kind<br>of gift</h3><p>Objects made to pass on, and stories made to go with them.</p><a href="#story">Read story <span>↗</span></a></article></div></section>
+
+      <section class="quote-section"><span class="quote-mark">“</span><blockquote>It feels like more than a toy. It feels like a tiny, joyful piece of history that my daughter gets to make her own.</blockquote><p>— NISHA S., BROOKLYN</p><div class="quote-dots"><i class="active"></i><i></i><i></i></div></section>
+    </main>
+
+    <footer><div class="footer-top"><div><a class="wordmark footer-logo" href="#top">GOMBE<span></span></a><p>Hand-turned stories<br>from Channapatna to everywhere.</p></div><div class="newsletter"><p class="eyebrow">A LITTLE JOY, IN YOUR INBOX</p><form id="newsletterForm"><input type="email" placeholder="Your email address" aria-label="Email address" required><button aria-label="Subscribe">→</button></form></div></div><div class="footer-links"><div><span>SHOP</span><a href="#collection">All dolls</a><a href="#collection">Gifts</a><a href="#collection">Custom studio</a></div><div><span>ABOUT</span><a href="#craft">Our craft</a><a href="#story">Journal</a><a href="#contact">Contact</a></div><div><span>SUPPORT</span><a href="#shipping">Shipping & returns</a><a href="#care">Care guide</a><a href="#faq">FAQs</a></div><div><span>FOLLOW</span><a href="#instagram">Instagram</a><a href="#pinterest">Pinterest</a></div></div><div class="footer-bottom"><span>© 2026 GOMBE</span><span>MADE WITH CARE IN INDIA</span><span>PRIVACY · TERMS</span></div></footer>
+
+    <aside class="cart-drawer" id="cartDrawer" aria-hidden="true"><div class="drawer-head"><h2>Your bag <span class="bag-count">0</span></h2><button class="drawer-close icon-button" aria-label="Close bag">×</button></div><div class="free-shipping" id="shippingMessage">Add $100 for complimentary global shipping.</div><div class="drawer-items" id="cartItems"></div><div class="drawer-empty" id="cartEmpty"><span>◌</span><p>Your bag is waiting for a story.</p><button class="text-button close-drawer">Continue shopping <span>→</span></button></div><div class="cart-summary"><div><span>Subtotal</span><strong id="cartSubtotal">$0</strong></div><small>Taxes and shipping calculated at checkout.</small><button class="button button-dark checkout-button">Secure checkout <span>→</span></button></div></aside>
+    <aside class="wishlist-drawer" id="wishlistDrawer" aria-hidden="true"><div class="drawer-head"><h2>Saved pieces <span class="wishlist-count">0</span></h2><button class="wishlist-close icon-button" aria-label="Close wishlist">×</button></div><div class="drawer-items" id="wishlistItems"></div><div class="drawer-empty" id="wishlistEmpty"><span>♡</span><p>Save the pieces that make you smile.</p></div></aside>
+    <div class="overlay" id="overlay"></div>
+
+    <dialog class="custom-modal" id="customModal"><button class="modal-close" aria-label="Close custom studio">×</button><div class="modal-intro"><p class="eyebrow">GOMBE STUDIO</p><h2>Let’s make<br><em>something personal.</em></h2><p>Tell us what you’re dreaming up. A maker from our studio will reply within two working days.</p><div class="studio-steps"><span class="current">01 Your idea</span><span>02 We sketch</span><span>03 We turn</span></div></div><form class="custom-form" id="customForm"><label>YOUR NAME<input name="name" required placeholder="Your name"></label><label>EMAIL ADDRESS<input type="email" name="email" required placeholder="you@email.com"></label><div class="form-duo"><label>STYLE<select name="style"><option>Traditional & bright</option><option>Minimal & modern</option><option>Animal companion</option><option>Surprise me</option></select></label><label>SIZE<select name="size"><option>Little (up to 12 cm)</option><option>Medium (up to 20 cm)</option><option>Grand (20 cm +)</option></select></label></div><label class="upload-area" for="referenceImage"><input type="file" id="referenceImage" accept="image/*"><span class="upload-plus">+</span><strong>Share a reference image</strong><small>JPG, PNG up to 10MB</small></label><label>THE STORY<textarea name="note" placeholder="Who is this piece for? What should it feel like?"></textarea></label><button class="button button-dark" type="submit">Send to the studio <span>→</span></button></form></dialog>
+
+    <dialog class="auth-modal" id="authModal"><button class="modal-close" aria-label="Close account dialog">×</button><div class="auth-mark">G</div><div class="auth-tabs"><button class="active" data-auth-tab="login">Sign in</button><button data-auth-tab="signup">Create account</button></div><form id="authForm"><h2 id="authTitle">Welcome back.</h2><p id="authSubtext">Sign in to see your saved pieces and orders.</p><label class="name-field">NAME<input type="text" placeholder="Your full name"></label><label>EMAIL<input type="email" required placeholder="you@email.com"></label><label>PASSWORD<input type="password" required placeholder="••••••••"></label><a class="forgot" href="#forgot">Forgot password?</a><button class="button button-dark" type="submit">Sign in <span>→</span></button></form><p class="legal">By continuing, you agree to Gombe’s Terms and Privacy Policy.</p></dialog>
+
+    <div class="mobile-menu" id="mobileMenu"><button class="modal-close menu-close" aria-label="Close menu">×</button><a class="wordmark" href="#top">GOMBE<span></span></a><nav><a href="#collection">Shop <span>↗</span></a><a href="#new">New arrivals <span>↗</span></a><a href="#craft">Our craft <span>↗</span></a><a href="#gifts">Gifts <span>↗</span></a></nav><button class="text-button custom-trigger">Create your own <span>↗</span></button></div>
+    <div class="toast" id="toast" role="status"></div>
+
+    <svg class="svg-defs" xmlns="http://www.w3.org/2000/svg"><symbol id="i-menu" viewBox="0 0 24 24"><path d="M3 7h18M3 12h18M3 17h18"/></symbol><symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></symbol><symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20c.7-3.4 3.4-5.2 7.5-5.2s6.8 1.8 7.5 5.2"/></symbol><symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.4 5.7a5.1 5.1 0 0 0-7.2 0L12 6.9l-1.2-1.2a5.1 5.1 0 0 0-7.2 7.2L12 21l8.4-8.1a5.1 5.1 0 0 0 0-7.2Z"/></symbol><symbol id="i-bag" viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></symbol><symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7h16M4 17h16M8 4v6M16 14v6"/></symbol><symbol id="i-chevron" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5"/></symbol></svg>
+    <script src="app.js"></script>
+  </body>
+</html>

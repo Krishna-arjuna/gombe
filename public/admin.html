@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#f6f3ed">
+    <title>Gombe Admin — Products</title>
+    <link rel="stylesheet" href="/admin.css">
+    <script src="/admin.js" type="module"></script>
+  </head>
+  <body>
+    <main class="admin-shell">
+      <section class="login-panel" id="loginPanel" aria-labelledby="loginTitle">
+        <a class="brand" href="/" aria-label="Gombe storefront">GOMBE<span></span></a>
+        <p class="eyebrow">PRIVATE WORKSHOP</p>
+        <h1 id="loginTitle">Good to see you.</h1>
+        <p class="subheading">Sign in to look after your collection.</p>
+        <p class="notice" id="setupNotice" role="status" hidden></p>
+        <form id="loginForm" class="login-form">
+          <label>ADMIN USERNAME<input name="username" autocomplete="username" required></label>
+          <label>PASSWORD<input name="password" type="password" autocomplete="current-password" required></label>
+          <button class="button button-dark" type="submit">Sign in <span>→</span></button>
+        </form>
+        <p class="form-message" id="loginMessage" role="alert" aria-live="polite"></p>
+        <a class="back-link" href="/">← Back to the shop</a>
+      </section>
+
+      <section class="dashboard" id="dashboard" hidden>
+        <header class="topbar">
+          <a class="brand" href="/" aria-label="Gombe storefront">GOMBE<span></span></a>
+          <div class="topbar-actions"><a href="/" class="back-link">View shop ↗</a><button class="quiet-button" id="logoutButton" type="button">Sign out</button></div>
+        </header>
+        <div class="page-heading">
+          <div><p class="eyebrow">THE WORKSHOP DESK</p><h1>Your collection</h1><p class="subheading">Add new toys, update prices, and keep your shop current.</p></div>
+          <button class="button button-dark" id="newProductButton" type="button">Add a toy <span>+</span></button>
+        </div>
+        <p class="notice" id="dashboardNotice" role="status" hidden></p>
+        <div class="admin-layout">
+          <section class="products-panel" aria-labelledby="productsTitle">
+            <div class="panel-heading"><div><p class="eyebrow">ON THE SHELF</p><h2 id="productsTitle">Products <span id="productCount">0</span></h2></div><button class="quiet-button" id="refreshButton" type="button">Refresh ↻</button></div>
+            <div class="product-list" id="productList" aria-live="polite"></div>
+          </section>
+          <section class="editor-panel" id="editorPanel" aria-labelledby="editorTitle">
+            <div class="panel-heading"><div><p class="eyebrow" id="editorEyebrow">NEW PIECE</p><h2 id="editorTitle">Add a toy</h2></div><button class="quiet-button" id="cancelEditButton" type="button">Clear</button></div>
+            <form id="productForm" class="product-form">
+              <label>TOY NAME<input name="name" maxlength="80" placeholder="e.g. The little storyteller" required></label>
+              <div class="field-row">
+                <label>PRICE (USD)<div class="price-input"><span>$</span><input name="price" type="number" min="1" max="100000" step="1" placeholder="48" required></div></label>
+                <label>STYLE<select name="style" required><option value="Classic">Classic</option><option value="Animal friends">Animal friends</option><option value="Playful">Playful</option></select></label>
+              </div>
+              <label>DESCRIPTION<input name="variant" maxlength="80" placeholder="Hand carved · Set of 2" required></label>
+              <div class="field-row">
+                <label>RECOMMENDED AGE<select name="ageGroup" required><option>1+ years</option><option>3+ years</option><option>6+ years</option></select></label>
+                <label>COLLECTION ART<select name="imageClass" required><option value="royal">Rani & Raja</option><option value="peacock">Dancing Peacock</option><option value="wobble">Wobble Family</option><option value="menagerie">Little Menagerie</option><option value="story">Storyteller Set</option><option value="tops">Tiny Top Trio</option></select></label>
+              </div>
+              <label>BADGE <span class="optional">OPTIONAL</span><input name="badge" maxlength="30" placeholder="New, Bestseller, Gift ready..."></label>
+              <label>PRODUCT PHOTO URL <span class="optional">OPTIONAL · HTTPS</span><input name="imageUrl" type="url" maxlength="2048" placeholder="https://example.com/toy-photo.jpg"><small>Use a direct HTTPS link to a product photo. Leave blank to use the illustrated collection art.</small></label>
+              <p class="form-message" id="productMessage" role="alert" aria-live="polite"></p>
+              <button class="button button-dark save-button" type="submit" id="saveButton">Save toy <span>→</span></button>
+            </form>
+          </section>
+        </div>
+        <footer class="admin-footer">Changes are saved to your product database and appear in the shop.</footer>
+      </section>
+    </main>
+  </body>
+</html>
