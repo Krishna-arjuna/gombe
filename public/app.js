@@ -12,6 +12,8 @@ let visibleCount = 4;
 let sortByPrice = false;
 let cart = [];
 let wishlist = new Set();
+let customer = null;
+let accountSaveQueue = Promise.resolve();
 let toastTimer;
 
 const productGrid = document.querySelector('#productGrid');
@@ -108,7 +110,9 @@ const art = {
   tops: `<div class="doll tops"><i class="top"></i><i class="top"></i><i class="top"></i></div>`
 };
 
-function money(value) { return `$${Number(value).toFixed(0)}`; }
+function money(value) {
+  return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(Number(value));
+}
 function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>"']/g, (character) => ({
     '&': '&amp;',
@@ -120,6 +124,7 @@ function escapeHtml(value) {
 }
 function safeProductImageUrl(value) {
   try {
+    if (/^\/uploads\/[a-f0-9]{32}\.(?:jpg|png|webp)$/.test(value)) return value;
     const url = new URL(value);
     return url.protocol === 'https:' ? url.href : '';
   } catch {
@@ -130,26 +135,28 @@ function selectedProducts() {
   const style = document.querySelector('#styleFilter').value;
   const age = document.querySelector('#ageFilter').value;
   const maxPrice = document.querySelector('#priceFilter').value;
+  const search = (document.querySelector('#catalogSearch')?.value || '').trim().toLowerCase();
   return products.filter((product) =>
     (style === 'All styles' || product.style === style) &&
     (age === 'All ages' || product.ageGroup === age) &&
-    (!maxPrice || product.price <= Number(maxPrice))
+    (!maxPrice || product.price <= Number(maxPrice)) &&
+    (!search || `${product.name} ${product.variant} ${product.style} ${product.ageGroup}`.toLowerCase().includes(search))
   );
 }
 
 function productCard(product) {
   const isSaved = wishlist.has(product.slug);
-  const imageUrl = safeProductImageUrl(product.imageUrl);
-  const imageClass = art[product.imageClass] ? product.imageClass : 'royal';
+  const imageUrl = safeProductImageUrl(product.imageUrl) || safeProductImageUrl(product.images?.[0]);
+  const available = product.inStock !== false;
   return `<article class="product-card">
-    <div class="product-visual ${imageClass}${imageUrl ? ' has-photo' : ''}">
-      ${imageUrl ? `<img class="product-photo" src="${escapeHtml(imageUrl)}" alt="" loading="lazy">` : ''}
-      ${product.badge ? `<span class="product-tag">${escapeHtml(product.badge)}</span>` : ''}
+    <div class="product-visual product-image-slot">
+      <span class="product-image-placeholder" aria-hidden="true">Product photo</span>
+      ${imageUrl ? `<img class="product-photo" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(product.name)}" loading="lazy">` : ''}
+      ${product.badge || !available ? `<span class="product-tag">${escapeHtml(available ? product.badge : 'Sold out')}</span>` : ''}
       <button class="card-heart ${isSaved ? 'saved' : ''}" data-save="${escapeHtml(product.slug)}" aria-label="${isSaved ? 'Remove from' : 'Save to'} wishlist">${isSaved ? '♥' : '♡'}</button>
-      ${art[imageClass]}
-      <button class="quick-add" data-add="${escapeHtml(product.slug)}">Add to bag <span>+</span></button>
+      <button class="quick-add" data-add="${escapeHtml(product.slug)}" ${available ? '' : 'disabled'}>${available ? 'Add to bag <span>+</span>' : 'Sold out'}</button>
     </div>
-    <div class="product-details"><span class="product-name">${escapeHtml(product.name)}</span><span class="product-price">${money(product.price)}</span><span class="product-variant">${escapeHtml(product.variant)}</span></div>
+    <div class="product-details"><a class="product-name product-detail-trigger" href="/products/${encodeURIComponent(product.slug)}" data-detail="${escapeHtml(product.slug)}">${escapeHtml(product.name)}</a><span class="product-price">${money(product.price)}</span><span class="product-variant">${escapeHtml(product.variant)}</span></div>
   </article>`;
 }
 
@@ -159,6 +166,7 @@ function renderProducts(reset = false) {
   productGrid.innerHTML = list.slice(0, visibleCount).map(productCard).join('');
   document.querySelector('#productTotal').textContent = `${String(list.length).padStart(2, '0')} ${list.length === 1 ? 'piece' : 'pieces'} to meet`;
   loadMore.hidden = list.length <= visibleCount;
+  document.querySelector('#catalogNoResults').hidden = list.length > 0;
   const filtersUsed = ['#styleFilter', '#ageFilter', '#priceFilter'].filter((selector) => document.querySelector(selector).value && !document.querySelector(selector).value.startsWith('All')).length;
   document.querySelector('.filter-active-count').textContent = filtersUsed ? `(${filtersUsed})` : '';
 }
@@ -169,6 +177,63 @@ function updateCounts() {
   document.querySelectorAll('.bag-count').forEach((node) => { node.textContent = cartQuantity(); });
   document.querySelectorAll('.wishlist-count').forEach((node) => { node.textContent = wishlist.size; });
 }
+function syncCustomerState(data, mergeGuest = false) {
+  const guestCart = mergeGuest ? cart : [];
+  const guestWishlist = mergeGuest ? [...wishlist] : [];
+  customer = data.user;
+  const quantities = new Map(data.cart.map((item) => [item.slug, item.quantity]));
+  for (const item of guestCart) quantities.set(item.slug, Math.min(99, (quantities.get(item.slug) || 0) + item.quantity));
+  cart = [...quantities].map(([slug, quantity]) => {
+    const product = getProduct(slug);
+    return product ? { ...product, quantity } : null;
+  }).filter(Boolean);
+  wishlist = new Set([...data.wishlist, ...guestWishlist].filter((slug) => getProduct(slug)));
+  updateCounts();
+  renderCart();
+  renderWishlist();
+  renderProducts();
+  updateCustomerInterface();
+}
+function updateCustomerInterface() {
+  const accountLabel = document.querySelector('.account-trigger .action-label');
+  const accountButton = document.querySelector('.account-trigger');
+  document.querySelector('#authForm').hidden = Boolean(customer);
+  document.querySelector('.auth-tabs').hidden = Boolean(customer);
+  document.querySelector('#authSignedIn').hidden = !customer;
+  accountLabel.textContent = customer ? customer.name : 'Log in';
+  accountButton.setAttribute('aria-label', customer ? `Account for ${customer.name}` : 'Log in or sign up');
+  if (customer) document.querySelector('#authSignedInDetails').textContent = customer.email;
+  document.dispatchEvent(new CustomEvent('gombe:customer-state'));
+}
+function persistAccountState() {
+  if (!customer) return;
+  const snapshot = {
+    cart: cart.map(({ slug, quantity }) => ({ slug, quantity })),
+    wishlist: [...wishlist]
+  };
+  accountSaveQueue = accountSaveQueue.catch(() => {}).then(async () => {
+    const response = await fetch('/api/account', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(snapshot)
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || 'Unable to save your bag and wishlist.');
+  });
+  accountSaveQueue.catch((error) => showToast(error.message));
+}
+async function loadCustomerSession() {
+  try {
+    const response = await fetch('/api/auth/session');
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || 'Unable to load your account.');
+    if (data.authenticated) syncCustomerState(data);
+    else updateCustomerInterface();
+  } catch (error) {
+    console.error('Unable to restore customer session:', error);
+    showToast(error.message);
+  }
+}
 function showToast(message) {
   const toast = document.querySelector('#toast');
   toast.textContent = message;
@@ -178,23 +243,31 @@ function showToast(message) {
 }
 
 function addToCart(slug) {
+  const product = getProduct(slug);
+  if (!product) return;
+  if (product.inStock === false) {
+    showToast(`${product.name} is currently out of stock.`);
+    return;
+  }
   const existing = cart.find((item) => item.slug === slug);
   if (existing) existing.quantity += 1;
-  else cart.push({ ...getProduct(slug), quantity: 1 });
+  else cart.push({ ...product, quantity: 1 });
   updateCounts();
   renderCart();
-  showToast(`${getProduct(slug).name} is in your bag.`);
+  persistAccountState();
+  showToast(`${product.name} is in your bag.`);
 }
 function removeFromCart(slug) {
   cart = cart.filter((item) => item.slug !== slug);
   updateCounts();
   renderCart();
+  persistAccountState();
 }
 function renderCart() {
   cartItems.innerHTML = cart.map((item) => `<div class="drawer-item"><div class="drawer-item-art ${item.imageClass}">${art[item.imageClass]}</div><div class="drawer-item-info"><h3>${escapeHtml(item.name)}</h3><p>${escapeHtml(item.variant)} · Qty ${item.quantity}</p><strong>${money(item.price * item.quantity)}</strong></div><button class="remove-item" data-remove-cart="${escapeHtml(item.slug)}" aria-label="Remove ${escapeHtml(item.name)}">×</button></div>`).join('');
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   document.querySelector('#cartSubtotal').textContent = money(subtotal);
-  document.querySelector('#shippingMessage').textContent = subtotal >= 100 ? 'Your order ships anywhere in the world, on us.' : `Add ${money(100 - subtotal)} for complimentary global shipping.`;
+  document.querySelector('#shippingMessage').textContent = 'Delivery options and any applicable fees are confirmed for your address at checkout.';
   cartEmpty.classList.toggle('visible', cart.length === 0);
   document.querySelector('.cart-summary').style.display = cart.length ? 'block' : 'none';
 }
@@ -216,6 +289,7 @@ function toggleWishlist(slug) {
   updateCounts();
   renderWishlist();
   renderProducts();
+  persistAccountState();
 }
 
 function openDrawer(drawer) {
@@ -253,7 +327,11 @@ document.querySelector('.bag-trigger').addEventListener('click', () => openDrawe
 document.querySelector('.wishlist-trigger').addEventListener('click', () => openDrawer(wishlistDrawer));
 document.querySelectorAll('.drawer-close,.wishlist-close,.close-drawer').forEach((button) => button.addEventListener('click', closeDrawers));
 overlay.addEventListener('click', closeDrawers);
-document.querySelector('.checkout-button').addEventListener('click', () => showToast('Checkout is ready for your payment gateway.'));
+document.querySelector('.checkout-button').addEventListener('click', () => {
+  if (!cart.length) return showToast('Add a piece to your bag before checking out.');
+  closeDrawers();
+  document.dispatchEvent(new CustomEvent('gombe:checkout'));
+});
 
 const customModal = document.querySelector('#customModal');
 const authModal = document.querySelector('#authModal');
@@ -262,7 +340,10 @@ function openCustomModal() {
   customModal.showModal();
 }
 document.querySelectorAll('.custom-trigger').forEach((button) => button.addEventListener('click', openCustomModal));
-document.querySelector('.account-trigger').addEventListener('click', () => authModal.showModal());
+document.querySelector('.account-trigger').addEventListener('click', () => {
+  document.querySelector('#authMessage').textContent = '';
+  authModal.showModal();
+});
 document.querySelectorAll('.modal-close').forEach((button) => button.addEventListener('click', () => {
   button.closest('dialog')?.close();
   if (button.classList.contains('menu-close')) document.querySelector('#mobileMenu').classList.remove('open');
@@ -295,10 +376,89 @@ document.querySelectorAll('[data-auth-tab]').forEach((tab) => tab.addEventListen
   authModal.classList.toggle('signup', isSignup);
   document.querySelector('#authTitle').textContent = isSignup ? 'Make it yours.' : 'Welcome back.';
   document.querySelector('#authSubtext').textContent = isSignup ? 'Create an account to save pieces and follow your orders.' : 'Sign in to see your saved pieces and orders.';
+  document.querySelector('.name-field').hidden = !isSignup;
+  document.querySelector('.name-field input').required = isSignup;
+  document.querySelector('#authForm [name="password"]').autocomplete = isSignup ? 'new-password' : 'current-password';
+  document.querySelector('#authForm .forgot').hidden = isSignup;
+  document.querySelector('#authMessage').textContent = '';
   document.querySelector('#authForm .button').innerHTML = `${isSignup ? 'Create account' : 'Sign in'} <span>→</span>`;
 }));
-document.querySelector('#authForm').addEventListener('submit', (event) => { event.preventDefault(); authModal.close(); showToast('You’re all set — welcome to Gombe.'); });
-document.querySelector('#newsletterForm').addEventListener('submit', (event) => { event.preventDefault(); event.currentTarget.reset(); showToast('A little joy is on its way to your inbox.'); });
+document.querySelector('#authForm').addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const submitButton = form.querySelector('button[type="submit"]');
+  const isSignup = document.querySelector('[data-auth-tab="signup"]').classList.contains('active');
+  submitButton.disabled = true;
+  document.querySelector('#authMessage').textContent = '';
+  const guestCart = [...cart];
+  const guestWishlist = [...wishlist];
+  try {
+    const response = await fetch(`/api/auth/${isSignup ? 'signup' : 'login'}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(Object.fromEntries(new FormData(form)))
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || 'Unable to sign in.');
+    cart = guestCart;
+    wishlist = new Set(guestWishlist);
+    syncCustomerState(data, true);
+    form.reset();
+    authModal.close();
+    persistAccountState();
+    showToast(isSignup ? 'Your Gombe account is ready.' : `Welcome back, ${customer.name}.`);
+  } catch (error) {
+    document.querySelector('#authMessage').textContent = error.message;
+  } finally {
+    submitButton.disabled = false;
+  }
+});
+document.querySelector('#customerLogout').addEventListener('click', async () => {
+  const button = document.querySelector('#customerLogout');
+  button.disabled = true;
+  try {
+    await accountSaveQueue.catch(() => {});
+    const response = await fetch('/api/auth/logout', { method: 'POST' });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || 'Unable to sign out.');
+    accountSaveQueue = Promise.resolve();
+    customer = null;
+    cart = [];
+    wishlist = new Set();
+    updateCounts();
+    renderCart();
+    renderWishlist();
+    renderProducts();
+    updateCustomerInterface();
+    authModal.close();
+    showToast('You have signed out.');
+  } catch (error) {
+    document.querySelector('#authMessage').textContent = error.message;
+  } finally {
+    button.disabled = false;
+  }
+});
+document.querySelector('#newsletterForm').addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const button = form.querySelector('button[type="submit"]');
+  button.disabled = true;
+  try {
+    const response = await fetch('/api/newsletter', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(Object.fromEntries(new FormData(form)))
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || 'Unable to sign you up right now.');
+    form.reset();
+    showToast(data.message);
+  } catch (error) {
+    showToast(error.message);
+  } finally {
+    button.disabled = false;
+  }
+});
 
 document.querySelector('[data-open-menu]').addEventListener('click', () => document.querySelector('#mobileMenu').classList.add('open'));
 document.querySelectorAll('#mobileMenu nav a').forEach((link) => link.addEventListener('click', () => document.querySelector('#mobileMenu').classList.remove('open')));
@@ -327,4 +487,21 @@ window.addEventListener('focus', loadCatalog);
 updateCounts();
 renderCart();
 renderWishlist();
-loadCatalog();
+updateCustomerInterface();
+window.GombeStorefront = {
+  getProducts: () => products,
+  getCart: () => cart,
+  getCustomer: () => customer,
+  findProduct: getProduct,
+  addToCart,
+  renderProducts,
+  clearCart: () => {
+    cart = [];
+    updateCounts();
+    renderCart();
+    persistAccountState();
+  },
+  money
+};
+window.GombeStorefront.catalogReady = loadCatalog();
+window.GombeStorefront.catalogReady.then(loadCustomerSession);

@@ -64,6 +64,15 @@ input:focus,select:focus,button:focus-visible,a:focus-visible{outline:2px solid 
 .price-input input{padding-left:28px}
 .optional{color:var(--muted);font:9px var(--mono);letter-spacing:.04em}
 .product-form small{font:11px/1.5 var(--sans);color:var(--muted);letter-spacing:normal}
+.product-form input[type=file]{padding:10px;background:#fffdf9;font:11px var(--sans);letter-spacing:normal}
+.image-preview-slot{display:flex;flex-wrap:wrap;gap:8px;min-height:0}
+.image-preview-slot:empty{display:none}
+.image-preview-slot img{width:84px;height:84px;object-fit:cover;border:1px solid var(--line);background:var(--cream)}
+.image-preview-slot img.image-preview-error{opacity:.35}
+.image-gallery-preview{align-items:flex-start}
+.image-gallery-preview img{width:70px;height:70px}
+.image-preview-remove{width:22px;height:22px;margin:0 0 0 -31px;padding:0;border:0;border-radius:50%;background:var(--ink);color:white;font-size:17px;line-height:20px}
+.image-gallery-preview .image-preview-remove{margin-left:-31px}
 .save-button{margin-top:2px}
 .admin-footer{padding-top:20px;color:var(--muted);font-size:11px}
 @media(max-width:980px){.admin-layout{grid-template-columns:1fr}.editor-panel{order:-1}.product-list{grid-template-columns:1fr 1fr}}

@@ -1,0 +1,15 @@
+.orders-panel{margin-top:24px;background:#fffdf9;border:1px solid var(--line);padding:25px}
+.order-list{display:grid;gap:12px}
+.order-card{border:1px solid var(--line);padding:17px}
+.order-card-heading{display:flex;justify-content:space-between;gap:15px;align-items:center}
+.order-card-heading>div{display:grid;gap:5px}
+.order-card-heading small{font:9px var(--mono);color:var(--muted)}
+.order-card>p{font-size:11px;line-height:1.5;margin:12px 0 0;overflow-wrap:anywhere}
+.order-gift-note{padding:11px;background:var(--paper)}
+.order-update{display:flex;align-items:center;gap:13px;flex-wrap:wrap;margin-top:16px;padding-top:13px;border-top:1px solid var(--line)}
+.order-update label{font:9px var(--mono);letter-spacing:.06em;text-transform:uppercase}
+.order-update select{display:block;margin-top:5px;border:1px solid var(--line);background:#fff;padding:8px;text-transform:capitalize}
+.order-payment-check{display:flex;align-items:center;gap:6px}
+.order-update button{margin-left:auto}
+.product-form textarea{width:100%;display:block;border:1px solid var(--line);background:#fffdf9;padding:12px;color:var(--ink);font:13px var(--sans);resize:vertical}
+@media(max-width:620px){.orders-panel{padding:18px}.order-update{align-items:stretch;flex-direction:column}.order-update button{margin:0}.order-card{padding:13px}}

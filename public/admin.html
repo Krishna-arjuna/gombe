@@ -7,6 +7,7 @@
     <meta name="theme-color" content="#f6f3ed">
     <title>Gombe Admin — Products</title>
     <link rel="stylesheet" href="/admin.css">
+    <link rel="stylesheet" href="/admin-orders.css">
     <script src="/admin.js" type="module"></script>
   </head>
   <body>
@@ -32,7 +33,7 @@
           <div class="topbar-actions"><a href="/" class="back-link">View shop ↗</a><button class="quiet-button" id="logoutButton" type="button">Sign out</button></div>
         </header>
         <div class="page-heading">
-          <div><p class="eyebrow">THE WORKSHOP DESK</p><h1>Your collection</h1><p class="subheading">Add new toys, update prices, and keep your shop current.</p></div>
+          <div><p class="eyebrow">THE WORKSHOP DESK</p><h1>Your collection</h1><p class="subheading">Add new toys, update prices, and keep your shop current. Prices are INR now—review every catalog amount before taking live orders.</p></div>
           <button class="button button-dark" id="newProductButton" type="button">Add a toy <span>+</span></button>
         </div>
         <p class="notice" id="dashboardNotice" role="status" hidden></p>
@@ -46,7 +47,7 @@
             <form id="productForm" class="product-form">
               <label>TOY NAME<input name="name" maxlength="80" placeholder="e.g. The little storyteller" required></label>
               <div class="field-row">
-                <label>PRICE (USD)<div class="price-input"><span>$</span><input name="price" type="number" min="1" max="100000" step="1" placeholder="48" required></div></label>
+                <label>PRICE (INR)<div class="price-input"><span>₹</span><input name="price" type="number" min="1" max="10000000" step="1" placeholder="480" required></div></label>
                 <label>STYLE<select name="style" required><option value="Classic">Classic</option><option value="Animal friends">Animal friends</option><option value="Playful">Playful</option></select></label>
               </div>
               <label>DESCRIPTION<input name="variant" maxlength="80" placeholder="Hand carved · Set of 2" required></label>
@@ -54,13 +55,23 @@
                 <label>RECOMMENDED AGE<select name="ageGroup" required><option>1+ years</option><option>3+ years</option><option>6+ years</option></select></label>
                 <label>COLLECTION ART<select name="imageClass" required><option value="royal">Rani & Raja</option><option value="peacock">Dancing Peacock</option><option value="wobble">Wobble Family</option><option value="menagerie">Little Menagerie</option><option value="story">Storyteller Set</option><option value="tops">Tiny Top Trio</option></select></label>
               </div>
+              <label>AVAILABILITY<select name="inStock"><option value="true">In stock</option><option value="false">Out of stock</option></select></label>
               <label>BADGE <span class="optional">OPTIONAL</span><input name="badge" maxlength="30" placeholder="New, Bestseller, Gift ready..."></label>
-              <label>PRODUCT PHOTO URL <span class="optional">OPTIONAL · HTTPS</span><input name="imageUrl" type="url" maxlength="2048" placeholder="https://example.com/toy-photo.jpg"><small>Use a direct HTTPS link to a product photo. Leave blank to use the illustrated collection art.</small></label>
+              <label>PRODUCT PHOTO URL <span class="optional">OPTIONAL · HTTPS</span><input name="imageUrl" type="text" inputmode="url" maxlength="2048" placeholder="Paste your product image URL here"><small>Paste a direct HTTPS image link. It will replace the illustrated placeholder in the shop and appear first in the product gallery.</small><span class="image-preview-slot" id="mainImagePreview"></span></label>
+              <label>OR UPLOAD MAIN PRODUCT PHOTO <span class="optional">JPG, PNG OR WEBP · UP TO 5 MB</span><input name="imageFile" type="file" accept="image/jpeg,image/png,image/webp"><small>Optional alternative to a photo URL.</small></label>
+              <label>GALLERY PHOTOS <span class="optional">OPTIONAL · UP TO 5 · JPG, PNG OR WEBP</span><input name="imageFiles" type="file" accept="image/jpeg,image/png,image/webp" multiple><small>Choose up to five extra product photos. Uploaded photos are added to the product gallery.</small><span class="image-preview-slot image-gallery-preview" id="galleryImagePreview"></span><textarea name="images" maxlength="10240" rows="3" placeholder="Or paste HTTPS image URLs, one per line"></textarea></label>
+              <label>PRODUCT STORY <span class="optional">OPTIONAL</span><textarea name="description" maxlength="1200" rows="3" placeholder="Tell customers about this piece, how it is made, and what makes it special."></textarea></label>
+              <div class="field-row"><label>MATERIALS<input name="materials" maxlength="160" placeholder="Add confirmed materials"></label><label>DIMENSIONS<input name="dimensions" maxlength="80" placeholder="e.g. 12 × 4 cm"></label></div>
+              <label>CARE INSTRUCTIONS <span class="optional">OPTIONAL</span><textarea name="care" maxlength="500" rows="2" placeholder="Share product-specific care guidance."></textarea></label>
               <p class="form-message" id="productMessage" role="alert" aria-live="polite"></p>
               <button class="button button-dark save-button" type="submit" id="saveButton">Save toy <span>→</span></button>
             </form>
           </section>
         </div>
+        <section class="orders-panel" aria-labelledby="ordersTitle">
+          <div class="panel-heading"><div><p class="eyebrow">FULFILMENT DESK</p><h2 id="ordersTitle">Customer orders <span id="orderCount">0</span></h2></div><button class="quiet-button" id="refreshOrdersButton" type="button">Refresh ↻</button></div>
+          <div class="order-list" id="orderList" aria-live="polite"></div>
+        </section>
         <footer class="admin-footer">Changes are saved to your product database and appear in the shop.</footer>
       </section>
     </main>
