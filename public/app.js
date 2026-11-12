@@ -13,7 +13,9 @@ let sortByPrice = false;
 let cart = [];
 let wishlist = new Set();
 let customer = null;
+const selectedQuantities = new Map();
 let accountSaveQueue = Promise.resolve();
+let pendingAccountAction = null;
 let toastTimer;
 
 const productGrid = document.querySelector('#productGrid');
@@ -154,10 +156,35 @@ function productCard(product) {
       ${imageUrl ? `<img class="product-photo" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(product.name)}" loading="lazy">` : ''}
       ${product.badge || !available ? `<span class="product-tag">${escapeHtml(available ? product.badge : 'Sold out')}</span>` : ''}
       <button class="card-heart ${isSaved ? 'saved' : ''}" data-save="${escapeHtml(product.slug)}" aria-label="${isSaved ? 'Remove from' : 'Save to'} wishlist">${isSaved ? '♥' : '♡'}</button>
-      <button class="quick-add" data-add="${escapeHtml(product.slug)}" ${available ? '' : 'disabled'}>${available ? 'Add to bag <span>+</span>' : 'Sold out'}</button>
+      <div class="product-card-actions">
+        ${quantityControl(product.slug, !available)}
+        <button class="quick-add" data-add="${escapeHtml(product.slug)}" ${available ? '' : 'disabled'}>${available ? 'Add to bag <span>+</span>' : 'Sold out'}</button>
+      </div>
     </div>
     <div class="product-details"><a class="product-name product-detail-trigger" href="/products/${encodeURIComponent(product.slug)}" data-detail="${escapeHtml(product.slug)}">${escapeHtml(product.name)}</a><span class="product-price">${money(product.price)}</span><span class="product-variant">${escapeHtml(product.variant)}</span></div>
   </article>`;
+}
+
+function quantityControl(slug, disabled = false) {
+  const quantity = selectedQuantities.get(slug) || 1;
+  return `<div class="quantity-control" data-quantity-control="${escapeHtml(slug)}" aria-label="Product quantity">
+    <button type="button" data-quantity-change="-1" aria-label="Decrease quantity" ${disabled || quantity <= 1 ? 'disabled' : ''}>−</button>
+    <span data-quantity-value aria-live="polite">${quantity}</span>
+    <button type="button" data-quantity-change="1" aria-label="Increase quantity" ${disabled || quantity >= 99 ? 'disabled' : ''}>+</button>
+  </div>`;
+}
+
+function updateSelectedQuantity(slug, change, control) {
+  const quantity = Math.min(99, Math.max(1, (selectedQuantities.get(slug) || 1) + change));
+  selectedQuantities.set(slug, quantity);
+  const controls = [...document.querySelectorAll('[data-quantity-control]')]
+    .filter((element) => element.dataset.quantityControl === slug);
+  if (control && !controls.includes(control)) controls.push(control);
+  controls.forEach((element) => {
+    element.querySelector('[data-quantity-value]').textContent = quantity;
+    element.querySelector('[data-quantity-change="-1"]').disabled = quantity <= 1;
+    element.querySelector('[data-quantity-change="1"]').disabled = quantity >= 99;
+  });
 }
 
 function renderProducts(reset = false) {
@@ -242,20 +269,32 @@ function showToast(message) {
   toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
 }
 
-function addToCart(slug) {
+function addToCart(slug, quantity = 1) {
+  if (!customer) {
+    requestAuthentication(() => addToCart(slug, quantity));
+    return false;
+  }
   const product = getProduct(slug);
-  if (!product) return;
+  if (!product) return false;
   if (product.inStock === false) {
     showToast(`${product.name} is currently out of stock.`);
-    return;
+    return false;
   }
   const existing = cart.find((item) => item.slug === slug);
-  if (existing) existing.quantity += 1;
-  else cart.push({ ...product, quantity: 1 });
+  const remaining = 99 - (existing?.quantity || 0);
+  const requested = Math.max(1, Math.floor(Number(quantity) || 1));
+  const amount = Math.min(requested, remaining);
+  if (!amount) {
+    showToast(`${product.name} has reached the maximum quantity of 99.`);
+    return false;
+  }
+  if (existing) existing.quantity += amount;
+  else cart.push({ ...product, quantity: amount });
   updateCounts();
   renderCart();
   persistAccountState();
-  showToast(`${product.name} is in your bag.`);
+  showToast(`${product.name}${amount > 1 ? ` × ${amount}` : ''} ${amount < requested ? 'added up to the maximum of 99.' : 'is in your bag.'}`);
+  return true;
 }
 function removeFromCart(slug) {
   cart = cart.filter((item) => item.slug !== slug);
@@ -264,7 +303,7 @@ function removeFromCart(slug) {
   persistAccountState();
 }
 function renderCart() {
-  cartItems.innerHTML = cart.map((item) => `<div class="drawer-item"><div class="drawer-item-art ${item.imageClass}">${art[item.imageClass]}</div><div class="drawer-item-info"><h3>${escapeHtml(item.name)}</h3><p>${escapeHtml(item.variant)} · Qty ${item.quantity}</p><strong>${money(item.price * item.quantity)}</strong></div><button class="remove-item" data-remove-cart="${escapeHtml(item.slug)}" aria-label="Remove ${escapeHtml(item.name)}">×</button></div>`).join('');
+  cartItems.innerHTML = cart.map((item) => `<div class="drawer-item"><div class="drawer-item-art ${item.imageClass}">${art[item.imageClass]}</div><div class="drawer-item-info"><h3>${escapeHtml(item.name)}</h3><p>${escapeHtml(item.variant)}</p><strong>${money(item.price * item.quantity)}</strong><div class="quantity-control cart-quantity-control" aria-label="${escapeHtml(item.name)} quantity"><button type="button" data-cart-change="-1" data-cart-quantity="${escapeHtml(item.slug)}" aria-label="Decrease ${escapeHtml(item.name)} quantity" ${item.quantity <= 1 ? 'disabled' : ''}>−</button><span>${item.quantity}</span><button type="button" data-cart-change="1" data-cart-quantity="${escapeHtml(item.slug)}" aria-label="Increase ${escapeHtml(item.name)} quantity" ${item.quantity >= 99 ? 'disabled' : ''}>+</button></div></div><button class="remove-item" data-remove-cart="${escapeHtml(item.slug)}" aria-label="Remove ${escapeHtml(item.name)}">×</button></div>`).join('');
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   document.querySelector('#cartSubtotal').textContent = money(subtotal);
   document.querySelector('#shippingMessage').textContent = 'Delivery options and any applicable fees are confirmed for your address at checkout.';
@@ -278,6 +317,10 @@ function renderWishlist() {
 }
 
 function toggleWishlist(slug) {
+  if (!customer) {
+    requestAuthentication(() => toggleWishlist(slug));
+    return;
+  }
   const product = getProduct(slug);
   if (wishlist.has(slug)) {
     wishlist.delete(slug);
@@ -289,6 +332,17 @@ function toggleWishlist(slug) {
   updateCounts();
   renderWishlist();
   renderProducts();
+  persistAccountState();
+}
+
+function updateCartQuantity(slug, change) {
+  const item = cart.find((entry) => entry.slug === slug);
+  if (!item) return;
+  const quantity = item.quantity + change;
+  if (quantity < 1 || quantity > 99) return;
+  item.quantity = quantity;
+  updateCounts();
+  renderCart();
   persistAccountState();
 }
 
@@ -304,14 +358,18 @@ function closeDrawers() {
 }
 
 productGrid.addEventListener('click', (event) => {
+  const quantityButton = event.target.closest('[data-quantity-change]');
   const addButton = event.target.closest('[data-add]');
   const saveButton = event.target.closest('[data-save]');
-  if (addButton) addToCart(addButton.dataset.add);
+  if (quantityButton) updateSelectedQuantity(quantityButton.closest('[data-quantity-control]').dataset.quantityControl, Number(quantityButton.dataset.quantityChange), quantityButton.closest('[data-quantity-control]'));
+  if (addButton) addToCart(addButton.dataset.add, selectedQuantities.get(addButton.dataset.add) || 1);
   if (saveButton) toggleWishlist(saveButton.dataset.save);
 });
 cartItems.addEventListener('click', (event) => {
-  const button = event.target.closest('[data-remove-cart]');
-  if (button) removeFromCart(button.dataset.removeCart);
+  const quantityButton = event.target.closest('[data-cart-change]');
+  const removeButton = event.target.closest('[data-remove-cart]');
+  if (quantityButton) updateCartQuantity(quantityButton.dataset.cartQuantity, Number(quantityButton.dataset.cartChange));
+  if (removeButton) removeFromCart(removeButton.dataset.removeCart);
 });
 wishlistItems.addEventListener('click', (event) => {
   const remove = event.target.closest('[data-remove-wish]');
@@ -335,14 +393,27 @@ document.querySelector('.checkout-button').addEventListener('click', () => {
 
 const customModal = document.querySelector('#customModal');
 const authModal = document.querySelector('#authModal');
+function requestAuthentication(action) {
+  pendingAccountAction = action;
+  document.querySelector('#authMessage').textContent = 'Sign in or create an account to save pieces and add them to your bag.';
+  if (!authModal.open) authModal.showModal();
+}
+authModal.addEventListener('close', () => { pendingAccountAction = null; });
 function openCustomModal() {
   document.querySelector('#mobileMenu').classList.remove('open');
   customModal.showModal();
 }
 document.querySelectorAll('.custom-trigger').forEach((button) => button.addEventListener('click', openCustomModal));
 document.querySelector('.account-trigger').addEventListener('click', () => {
+  pendingAccountAction = null;
   document.querySelector('#authMessage').textContent = '';
   authModal.showModal();
+});
+document.addEventListener('click', (event) => {
+  const quantityButton = event.target.closest('[data-quantity-change]');
+  if (!quantityButton || productGrid.contains(quantityButton)) return;
+  const control = quantityButton.closest('[data-quantity-control]');
+  if (control) updateSelectedQuantity(control.dataset.quantityControl, Number(quantityButton.dataset.quantityChange), control);
 });
 document.querySelectorAll('.modal-close').forEach((button) => button.addEventListener('click', () => {
   button.closest('dialog')?.close();
@@ -406,7 +477,10 @@ document.querySelector('#authForm').addEventListener('submit', async (event) => 
     wishlist = new Set(guestWishlist);
     syncCustomerState(data, true);
     form.reset();
+    const pendingAction = pendingAccountAction;
+    pendingAccountAction = null;
     authModal.close();
+    pendingAction?.();
     persistAccountState();
     showToast(isSignup ? 'Your Gombe account is ready.' : `Welcome back, ${customer.name}.`);
   } catch (error) {
@@ -511,6 +585,8 @@ window.GombeStorefront = {
   getCustomer: () => customer,
   findProduct: getProduct,
   addToCart,
+  quantityControl,
+  getSelectedQuantity: (slug) => selectedQuantities.get(slug) || 1,
   renderProducts,
   clearCart: () => {
     cart = [];

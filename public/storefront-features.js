@@ -214,7 +214,7 @@
       <p class="product-dialog-description">${escapeHtml(description)}</p>
       <dl class="product-facts"><div><dt>Recommended age</dt><dd>${escapeHtml(product.ageGroup)}</dd></div><div><dt>Style</dt><dd>${escapeHtml(product.style)}</dd></div><div><dt>Materials</dt><dd>${escapeHtml(product.materials || 'Contact our team for product-specific details')}</dd></div><div><dt>Dimensions</dt><dd>${escapeHtml(product.dimensions || 'Contact our team for exact dimensions')}</dd></div><div><dt>Care</dt><dd>${escapeHtml(product.care || 'Wipe gently with a soft, dry cloth; keep away from prolonged moisture.')}</dd></div><div><dt>Availability</dt><dd>${product.inStock === false ? 'Currently sold out' : 'Available to order'}</dd></div></dl>
       <p class="checkout-note">For specific safety details, <button type="button" class="inline-action" data-open-support>ask our team</button> before ordering.</p>
-      <button type="button" class="button button-dark product-dialog-add" data-add-detail="${escapeHtml(slug)}" ${product.inStock === false ? 'disabled' : ''}>${product.inStock === false ? 'Currently sold out' : 'Add to bag <span>→</span>'}</button>`;
+      <div class="product-dialog-actions">${store.quantityControl(slug, product.inStock === false)}<button type="button" class="button button-dark product-dialog-add" data-add-detail="${escapeHtml(slug)}" ${product.inStock === false ? 'disabled' : ''}>${product.inStock === false ? 'Currently sold out' : 'Add to bag <span>→</span>'}</button></div>`;
     const relatedProducts = store.getProducts().filter((item) => item.slug !== slug);
     document.querySelector('#relatedProducts').innerHTML = relatedProducts.map((item) => {
       const imageUrl = safeProductImageUrl(item.imageUrl) || safeProductImageUrl(item.images?.[0]);
@@ -315,8 +315,8 @@
   document.querySelector('#productDialogCopy').addEventListener('click', (event) => {
     const addButton = event.target.closest('[data-add-detail]');
     if (addButton && !addButton.disabled) {
-      store.addToCart(addButton.dataset.addDetail);
-      document.querySelector('.bag-trigger').click();
+      const added = store.addToCart(addButton.dataset.addDetail, store.getSelectedQuantity(addButton.dataset.addDetail));
+      if (added) document.querySelector('.bag-trigger').click();
     }
     if (event.target.closest('.product-back-link')) {
       event.preventDefault();
