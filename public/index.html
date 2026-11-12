@@ -26,6 +26,31 @@
       </div>
     </header>
     <main id="top">
+      <section class="product-page" id="productPage" hidden aria-labelledby="productPageTitle">
+        <div class="product-page-breadcrumb"><a class="product-back-link" href="/#collection">← Back to collection</a></div>
+        <div class="product-dialog-content">
+          <div class="product-dialog-visual" id="productDialogVisual"></div>
+          <div class="product-dialog-copy" id="productDialogCopy"></div>
+        </div>
+        <section class="product-reviews" id="productReviews">
+          <div class="feature-section-heading"><p class="eyebrow">CUSTOMER NOTES</p><h3>Reviews from the Gombe community</h3></div>
+          <div id="reviewList" aria-live="polite"></div>
+          <form id="reviewForm" hidden>
+            <label>YOUR RATING<select name="rating" required><option value="">Choose a rating</option><option value="5">5 — Loved it</option><option value="4">4 — Lovely</option><option value="3">3 — Good</option><option value="2">2 — Could be better</option><option value="1">1 — Not for me</option></select></label>
+            <label>YOUR REVIEW<textarea name="body" maxlength="1200" required placeholder="What should another customer know?"></textarea></label>
+            <p class="feature-form-message" id="reviewMessage" role="alert" aria-live="polite"></p>
+            <button class="button button-dark" type="submit">Share review <span>→</span></button>
+          </form>
+          <p id="reviewSignIn" hidden>Sign in to leave a review after your order has been delivered. <button class="inline-action" type="button" data-open-account>Sign in</button></p>
+        </section>
+        <section class="related-products" aria-labelledby="relatedProductsTitle">
+          <div class="section-head">
+            <div><p class="eyebrow">KEEP EXPLORING</p><h2 id="relatedProductsTitle">More little<br><em>worlds to meet.</em></h2></div>
+            <a class="arrow-link" href="/#collection">View the collection <span>→</span></a>
+          </div>
+          <div class="product-grid" id="relatedProducts"></div>
+        </section>
+      </section>
       <section class="hero" aria-label="Gombe collection highlights">
         <div class="hero-slides" aria-hidden="true"><div class="hero-slide hero-slide-1 active"></div><div class="hero-slide hero-slide-2"></div><div class="hero-slide hero-slide-3"></div></div>
         <div class="hero-copy reveal">
@@ -89,15 +114,74 @@
           <details><summary>How do I care for hand-turned wooden toys?<span>+</span></summary><p>Wipe gently with a soft, dry cloth and keep away from prolonged moisture. Contact us for care guidance for a specific piece.</p></details>
         </div>
       </section>
+
+      <section class="trust-section" aria-labelledby="trustTitle">
+        <div class="section-head trust-head"><div><p class="eyebrow">WHY GOMBE</p><h2 id="trustTitle">Made with<br><em>care that lasts.</em></h2></div><p>Thoughtful details, honest materials, and a story that sits beautifully in the everyday.</p></div>
+        <div class="trust-grid">
+          <article class="trust-card"><span class="trust-kicker">01</span><h3>Safety-first finishes</h3><p>Water-safe, non-toxic food-grade finishes chosen for curious little hands.</p></article>
+          <article class="trust-card"><span class="trust-kicker">02</span><h3>Made by real artisans</h3><p>Every piece is shaped, painted, and checked in Channapatna by experienced makers.</p></article>
+          <article class="trust-card"><span class="trust-kicker">03</span><h3>Family-ready gifting</h3><p>Gift notes, bundles and custom messages make every order feel personal from the start.</p></article>
+          <article class="trust-card"><span class="trust-kicker">04</span><h3>Thoughtful delivery</h3><p>Clear timelines, careful packing, and straightforward support before and after checkout.</p></article>
+        </div>
+      </section>
+
+      <section class="maker-showcase" id="makers">
+        <div class="maker-showcase-media"><div class="maker-photo"><span>made in channapatna</span></div></div>
+        <div class="maker-showcase-copy">
+          <p class="eyebrow">FROM WOOD TO WONDER</p>
+          <h2>Every toy starts with a turn of the lathe and a little imagination.</h2>
+          <p>Our makers shape each silhouette, paint it with slow, careful colour, and finish it so it feels ready for years of play.</p>
+          <ul>
+            <li>Natural wood, hand-finished and polished</li>
+            <li>Layered colour from lovingly mixed pigments</li>
+            <li>A design language made for stories, tiny hands, and memory-making</li>
+          </ul>
+          <button class="button button-dark custom-trigger" type="button">Start a custom piece <span>→</span></button>
+        </div>
+      </section>
+
+      <section class="delivery-section" id="delivery">
+        <div class="section-head delivery-head"><div><p class="eyebrow">DELIVERY & GIFTING</p><h2>Fast, clear,<br><em>easy to love.</em></h2></div><p>From the first question to the final unpacking, our packaging and shipping details are designed to feel effortless.</p></div>
+        <div class="delivery-layout">
+          <form class="shipping-estimator" id="shippingForm">
+            <label for="shippingPostalCode">Check your delivery estimate</label>
+            <div class="shipping-input-row">
+              <input id="shippingPostalCode" name="postalCode" type="text" inputmode="numeric" maxlength="6" placeholder="Enter PIN / postal code" />
+              <button class="button button-dark" type="submit">Check <span>→</span></button>
+            </div>
+            <p class="shipping-hint">Typical dispatch: 2–4 business days for ready-to-ship pieces.</p>
+            <div class="shipping-result" id="shippingResult">Delivery estimate: Free shipping over ₹2,000.</div>
+          </form>
+
+          <div class="gift-stack">
+            <article class="gift-feature">
+              <span class="gift-label">Gift wrap</span>
+              <h3>Handwritten note included</h3>
+              <p>Add a sweet message and a soft wrap for birthdays, first birthdays, and big little moments.</p>
+            </article>
+            <article class="gift-feature highlight">
+              <span class="gift-label">Gift cards</span>
+              <h3>Make it easy to choose</h3>
+              <p>Pair a favourite toy with a Gombe gift voucher for the perfect little surprise.</p>
+            </article>
+            <article class="gift-feature">
+              <span class="gift-label">Bundles</span>
+              <h3>Complete the story set</h3>
+              <p>Mix a keepsake with a companion toy to turn gifting into a whole little world.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
     </main>
 
-    <footer><div class="footer-top"><div><a class="wordmark footer-logo" href="#top">GOMBE<span></span></a><p>Hand-turned stories<br>from Channapatna to everywhere.</p></div><div class="newsletter"><p class="eyebrow">A LITTLE JOY, IN YOUR INBOX</p><form id="newsletterForm"><input type="email" name="email" placeholder="Your email address" aria-label="Email address" required><button type="submit" aria-label="Subscribe">→</button></form></div></div><div class="footer-links"><div><span>SHOP</span><a href="#collection">All dolls</a><a href="#gifts">Gifts</a><a href="#collection">Custom studio</a></div><div><span>ABOUT</span><a href="#craft">Our craft</a><a href="#story">Journal</a><a href="#faq" data-open-support>Contact our team</a></div><div><span>SUPPORT</span><a href="#faq">Shipping & returns</a><a href="#faq">Care guide</a><a href="#faq">FAQs</a><button type="button" class="footer-track" data-open-tracking>Track an order</button></div><div><span>FOLLOW</span><a href="#instagram">Instagram</a><a href="#pinterest">Pinterest</a></div></div><div class="footer-bottom"><span>© 2026 GOMBE</span><span>MADE WITH CARE IN INDIA</span><span>PRIVACY · TERMS</span></div></footer>
+    <footer><div class="footer-top"><div><a class="wordmark footer-logo" href="#top">GOMBE<span></span></a><p>Hand-turned stories<br>from Channapatna to everywhere.</p></div><div class="newsletter"><p class="eyebrow">A LITTLE JOY, IN YOUR INBOX</p><form id="newsletterForm"><input type="email" name="email" placeholder="Your email address" aria-label="Email address" required><button type="submit" aria-label="Subscribe">→</button></form></div></div><div class="footer-links"><div><span>SHOP</span><a href="#collection">All dolls</a><a href="#gifts">Gifts</a><a href="#collection">Custom studio</a></div><div><span>ABOUT</span><a href="#craft">Our craft</a><a href="#story">Journal</a><a href="#faq" data-open-support>Contact our team</a></div><div><span>SUPPORT</span><a href="#faq">Shipping & returns</a><a href="#faq">Care guide</a><a href="#faq">FAQs</a><button type="button" class="footer-track" data-open-tracking>Track an order</button></div><div><span>FOLLOW</span><a href="https://instagram.com" target="_blank" rel="noreferrer">Instagram</a><a href="https://pinterest.com" target="_blank" rel="noreferrer">Pinterest</a></div></div><div class="footer-bottom"><span>© 2026 GOMBE</span><span>MADE WITH CARE IN INDIA</span><span>PRIVACY · TERMS</span></div></footer>
 
     <aside class="cart-drawer" id="cartDrawer" aria-hidden="true"><div class="drawer-head"><h2>Your bag <span class="bag-count">0</span></h2><button class="drawer-close icon-button" aria-label="Close bag">×</button></div><div class="free-shipping" id="shippingMessage">Delivery fees are confirmed for your address at checkout.</div><div class="drawer-items" id="cartItems"></div><div class="drawer-empty" id="cartEmpty"><span>◌</span><p>Your bag is waiting for a story.</p><button class="text-button close-drawer">Continue shopping <span>→</span></button></div><div class="cart-summary"><div><span>Subtotal</span><strong id="cartSubtotal">₹0</strong></div><small>Shipping fees are included in the total shown at checkout. Contact us with tax questions.</small><button class="button button-dark checkout-button">Secure checkout <span>→</span></button></div></aside>
     <aside class="wishlist-drawer" id="wishlistDrawer" aria-hidden="true"><div class="drawer-head"><h2>Saved pieces <span class="wishlist-count">0</span></h2><button class="wishlist-close icon-button" aria-label="Close wishlist">×</button></div><div class="drawer-items" id="wishlistItems"></div><div class="drawer-empty" id="wishlistEmpty"><span>♡</span><p>Save the pieces that make you smile.</p></div></aside>
     <div class="overlay" id="overlay"></div>
 
-    <dialog class="custom-modal" id="customModal"><button class="modal-close" aria-label="Close custom studio">×</button><div class="modal-intro"><p class="eyebrow">GOMBE STUDIO</p><h2>Let’s make<br><em>something personal.</em></h2><p>Tell us what you’re dreaming up. A maker from our studio will reply within two working days.</p><div class="studio-steps"><span class="current">01 Your idea</span><span>02 We sketch</span><span>03 We turn</span></div></div><form class="custom-form" id="customForm"><label>YOUR NAME<input name="name" required placeholder="Your name"></label><label>EMAIL ADDRESS<input type="email" name="email" required placeholder="you@email.com"></label><div class="form-duo"><label>STYLE<select name="style"><option>Traditional & bright</option><option>Minimal & modern</option><option>Animal companion</option><option>Surprise me</option></select></label><label>SIZE<select name="size"><option>Little (up to 12 cm)</option><option>Medium (up to 20 cm)</option><option>Grand (20 cm +)</option></select></label></div><label class="upload-area" for="referenceImage"><input type="file" id="referenceImage" accept="image/*"><span class="upload-plus">+</span><strong>Share a reference image</strong><small>JPG, PNG up to 10MB</small></label><label>THE STORY<textarea name="note" placeholder="Who is this piece for? What should it feel like?"></textarea></label><button class="button button-dark" type="submit">Send to the studio <span>→</span></button></form></dialog>
+    <dialog class="custom-modal" id="customModal"><button class="modal-close" aria-label="Close custom studio">×</button><div class="modal-intro"><p class="eyebrow">GOMBE STUDIO</p><h2>Let’s make<br><em>something personal.</em></h2><p>Tell us what you’re dreaming up. A maker from our studio will reply within two working days.</p><div class="studio-steps"><span class="current">01 Your idea</span><span>02 We sketch</span><span>03 We turn</span></div></div><form class="custom-form" id="customForm"><label>YOUR NAME<input name="name" required placeholder="Your name"></label><label>EMAIL ADDRESS<input type="email" name="email" required placeholder="you@email.com"></label><div class="form-duo"><label>STYLE<select name="style"><option>Traditional & bright</option><option>Minimal & modern</option><option>Animal companion</option><option>Surprise me</option></select></label><label>SIZE<select name="size"><option>Little (up to 12 cm)</option><option>Medium (up to 20 cm)</option><option>Grand (20 cm +)</option></select></label></div><label class="upload-area" for="referenceImage"><input type="file" id="referenceImage" name="referenceImage" accept="image/*"><span class="upload-plus">+</span><strong>Share a reference image</strong><small>JPG, PNG up to 10MB</small></label><label>THE STORY<textarea name="note" placeholder="Who is this piece for? What should it feel like?"></textarea></label><button class="button button-dark" type="submit">Send to the studio <span>→</span></button></form></dialog>
 
     <dialog class="auth-modal" id="authModal"><button class="modal-close" aria-label="Close account dialog">×</button><div class="auth-mark">G</div><div class="auth-tabs"><button class="active" data-auth-tab="login">Sign in</button><button data-auth-tab="signup">Create account</button></div><form id="authForm"><h2 id="authTitle">Welcome back.</h2><p id="authSubtext">Sign in to see your saved pieces and orders.</p><p class="auth-message" id="authMessage" role="alert" aria-live="polite"></p><label class="name-field" hidden>NAME<input type="text" name="name" autocomplete="name" maxlength="80" placeholder="Your full name"></label><label>EMAIL<input type="email" name="email" autocomplete="email" required maxlength="254" placeholder="you@email.com"></label><label>PASSWORD<input type="password" name="password" autocomplete="current-password" required minlength="8" maxlength="128" placeholder="At least 8 characters"></label><a class="forgot" href="#forgot">Forgot password?</a><button class="button button-dark" type="submit">Sign in <span>→</span></button></form><div id="authSignedIn" hidden><h2>You're signed in.</h2><p id="authSignedInDetails"></p><button class="button button-dark" id="customerLogout" type="button">Sign out <span>→</span></button></div><p class="legal">By continuing, you agree to Gombe’s Terms and Privacy Policy.</p></dialog>
 

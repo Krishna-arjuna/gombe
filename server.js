@@ -973,4 +973,26 @@ app.get('/admin', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'ad
 
 app.get('*', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
-app.listen(port, () => console.log(`Gombe is running at http://localhost:${port}`));
+function startServer(candidatePort = Number(port)) {
+  const server = app.listen(candidatePort, () => {
+    const address = server.address();
+    const listeningPort = typeof address === 'object' && address ? address.port : candidatePort;
+    console.log(`Gombe is running at http://localhost:${listeningPort}`);
+  });
+
+  server.on('error', (error) => {
+    if (error.code !== 'EADDRINUSE') throw error;
+
+    const nextPort = candidatePort + 1;
+    if (nextPort > Math.min(Number(port) + 10, 65535)) {
+      console.error(`Ports ${port}–${candidatePort} are already in use. Set PORT to an available port and try again.`);
+      process.exitCode = 1;
+      return;
+    }
+
+    console.warn(`Port ${candidatePort} is already in use; trying port ${nextPort}.`);
+    startServer(nextPort);
+  });
+}
+
+startServer();

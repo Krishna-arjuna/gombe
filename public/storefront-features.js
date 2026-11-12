@@ -7,11 +7,6 @@
 
   const dialogs = document.createElement('div');
   dialogs.innerHTML = `
-    <dialog class="feature-dialog product-dialog" id="productDialog" aria-labelledby="productDialogTitle">
-      <button class="feature-close" type="button" data-close-dialog aria-label="Close product details">×</button>
-      <div class="product-dialog-content"><div class="product-dialog-visual" id="productDialogVisual"></div><div class="product-dialog-copy" id="productDialogCopy"></div></div>
-      <section class="product-reviews" id="productReviews"><div class="feature-section-heading"><p class="eyebrow">CUSTOMER NOTES</p><h3>Reviews from the Gombe community</h3></div><div id="reviewList" aria-live="polite"></div><form id="reviewForm" hidden><label>YOUR RATING<select name="rating" required><option value="">Choose a rating</option><option value="5">5 — Loved it</option><option value="4">4 — Lovely</option><option value="3">3 — Good</option><option value="2">2 — Could be better</option><option value="1">1 — Not for me</option></select></label><label>YOUR REVIEW<textarea name="body" maxlength="1200" required placeholder="What should another customer know?"></textarea></label><p class="feature-form-message" id="reviewMessage" role="alert" aria-live="polite"></p><button class="button button-dark" type="submit">Share review <span>→</span></button></form><p id="reviewSignIn" hidden>Sign in to leave a review after your order has been delivered. <button class="inline-action" type="button" data-open-account>Sign in</button></p></section>
-    </dialog>
     <dialog class="feature-dialog checkout-dialog" id="checkoutDialog" aria-labelledby="checkoutTitle">
       <button class="feature-close" type="button" data-close-dialog aria-label="Close checkout">×</button>
       <div class="checkout-content"><div class="checkout-heading"><p class="eyebrow">A GOOD THING IS ON ITS WAY</p><h2 id="checkoutTitle">Delivery details</h2><p>Secure checkout · Prices in Indian rupees</p></div>
@@ -49,7 +44,7 @@
   let checkoutConfig = { razorpayEnabled: false, checkoutReady: false, shippingFee: 0, giftWrapFee: 0 };
   let currentProductSlug = '';
   let currentTrackingCode = '';
-  let productDialog = document.querySelector('#productDialog');
+  const productPage = document.querySelector('#productPage');
   let checkoutDialog = document.querySelector('#checkoutDialog');
   let trackingDialog = document.querySelector('#trackingDialog');
   let supportDialog = document.querySelector('#supportDialog');
@@ -86,13 +81,22 @@
     if (!dialog.open) dialog.showModal();
   }
 
-  function restoreCollection() {
+  function restoreCollection(updateUrl = true) {
     document.body.classList.remove('product-page-mode');
+    productPage.hidden = true;
     document.title = 'Gombe — Channapatna, for every story';
-    if (window.location.pathname.startsWith('/products/') || new URLSearchParams(window.location.search).has('piece')) {
-      history.replaceState({}, '', '/#collection');
+    if (updateUrl && (window.location.pathname.startsWith('/products/') || new URLSearchParams(window.location.search).has('piece'))) {
+      history.pushState({}, '', '/#collection');
     }
+    document.querySelectorAll('#top > section:not(#productPage)').forEach((section) => { section.hidden = false; });
     document.querySelector('#collection').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function showProductPage() {
+    document.body.classList.add('product-page-mode');
+    document.querySelectorAll('#top > section:not(#productPage)').forEach((section) => { section.hidden = true; });
+    productPage.hidden = false;
+    window.scrollTo(0, 0);
   }
 
   function openTracking(reference = '') {
@@ -204,26 +208,37 @@
     const description = product.description || `${product.variant}. A hand-turned wooden piece made for open-ended play, story-making and keeping.`;
     const copy = document.querySelector('#productDialogCopy');
     copy.innerHTML = `
-      <a class="product-back-link" href="/#collection">← Back to collection</a>
       <p class="eyebrow">${escapeHtml(product.style)} · ${escapeHtml(product.ageGroup)}</p>
-      <h2 id="productDialogTitle">${escapeHtml(product.name)}</h2>
+      <h1 id="productPageTitle">${escapeHtml(product.name)}</h1>
       <p class="product-dialog-price">${formatMoney(product.price)}</p>
       <p class="product-dialog-description">${escapeHtml(description)}</p>
       <dl class="product-facts"><div><dt>Recommended age</dt><dd>${escapeHtml(product.ageGroup)}</dd></div><div><dt>Style</dt><dd>${escapeHtml(product.style)}</dd></div><div><dt>Materials</dt><dd>${escapeHtml(product.materials || 'Contact our team for product-specific details')}</dd></div><div><dt>Dimensions</dt><dd>${escapeHtml(product.dimensions || 'Contact our team for exact dimensions')}</dd></div><div><dt>Care</dt><dd>${escapeHtml(product.care || 'Wipe gently with a soft, dry cloth; keep away from prolonged moisture.')}</dd></div><div><dt>Availability</dt><dd>${product.inStock === false ? 'Currently sold out' : 'Available to order'}</dd></div></dl>
       <p class="checkout-note">For specific safety details, <button type="button" class="inline-action" data-open-support>ask our team</button> before ordering.</p>
       <button type="button" class="button button-dark product-dialog-add" data-add-detail="${escapeHtml(slug)}" ${product.inStock === false ? 'disabled' : ''}>${product.inStock === false ? 'Currently sold out' : 'Add to bag <span>→</span>'}</button>`;
+    const relatedProducts = store.getProducts().filter((item) => item.slug !== slug);
+    document.querySelector('#relatedProducts').innerHTML = relatedProducts.map((item) => {
+      const imageUrl = safeProductImageUrl(item.imageUrl) || safeProductImageUrl(item.images?.[0]);
+      return `<article class="product-card">
+        <a class="related-product-visual product-visual product-image-slot" href="/products/${encodeURIComponent(item.slug)}" data-detail="${escapeHtml(item.slug)}" aria-label="View ${escapeHtml(item.name)}">
+          <span class="product-image-placeholder" aria-hidden="true">Product photo</span>
+          ${imageUrl ? `<img class="product-photo" src="${escapeHtml(imageUrl)}" alt="" loading="lazy">` : ''}
+          ${item.badge ? `<span class="product-tag">${escapeHtml(item.badge)}</span>` : ''}
+        </a>
+        <div class="product-details"><a class="product-name" href="/products/${encodeURIComponent(item.slug)}" data-detail="${escapeHtml(item.slug)}">${escapeHtml(item.name)}</a><span class="product-price">${formatMoney(item.price)}</span><span class="product-variant">${escapeHtml(item.variant)}</span></div>
+      </article>`;
+    }).join('');
     document.querySelector('#reviewList').innerHTML = '<p class="checkout-note">Loading verified customer reviews…</p>';
     document.querySelector('#reviewForm').hidden = !store.getCustomer();
     document.querySelector('#reviewSignIn').hidden = Boolean(store.getCustomer());
     showMessage(document.querySelector('#reviewMessage'), '');
-    openDialog(productDialog);
+    showProductPage();
     if (updateUrl) {
       const url = new URL(`/products/${encodeURIComponent(slug)}`, window.location.origin);
       history.pushState({ piece: slug }, '', url);
     }
-    document.body.classList.toggle('product-page-mode', window.location.pathname.startsWith('/products/'));
     try {
       const data = await requestJson(`/api/products/${encodeURIComponent(slug)}/reviews`);
+      if (currentProductSlug !== slug) return;
       const reviewList = document.querySelector('#reviewList');
       if (!data.reviews.length) {
         reviewList.innerHTML = '<p class="checkout-note">No verified reviews yet. Be the first to share your experience after your order arrives.</p>';
@@ -231,7 +246,7 @@
         reviewList.innerHTML = data.reviews.map((review) => `<article class="review-entry"><div><strong>${escapeHtml(review.customerName)}</strong><span class="verified-badge">VERIFIED PURCHASE</span><span class="review-stars" aria-label="${review.rating} out of 5 stars">${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}</span></div><p>${escapeHtml(review.body)}</p><time datetime="${escapeHtml(review.createdAt)}">${new Date(review.createdAt).toLocaleDateString()}</time></article>`).join('');
       }
     } catch (error) {
-      document.querySelector('#reviewList').innerHTML = `<p class="feature-form-message">${escapeHtml(error.message)}</p>`;
+      if (currentProductSlug === slug) document.querySelector('#reviewList').innerHTML = `<p class="feature-form-message">${escapeHtml(error.message)}</p>`;
     }
   }
 
@@ -301,24 +316,26 @@
     const addButton = event.target.closest('[data-add-detail]');
     if (addButton && !addButton.disabled) {
       store.addToCart(addButton.dataset.addDetail);
-      productDialog.close();
-      restoreCollection();
       document.querySelector('.bag-trigger').click();
     }
     if (event.target.closest('.product-back-link')) {
       event.preventDefault();
-      productDialog.close();
       restoreCollection();
     }
     if (event.target.closest('[data-open-support]')) openDialog(supportDialog);
   });
-  document.querySelector('#productDialog').addEventListener('click', (event) => {
-    if (event.target.closest('[data-close-dialog]')) {
-      productDialog.close();
+  productPage.addEventListener('click', (event) => {
+    const productLink = event.target.closest('[data-detail]');
+    if (productLink) {
+      event.preventDefault();
+      openProduct(productLink.dataset.detail);
+      return;
+    }
+    if (event.target.closest('.product-back-link')) {
+      event.preventDefault();
       restoreCollection();
     }
   });
-  document.querySelector('#productDialog').addEventListener('close', restoreCollection);
   document.querySelector('#searchTrigger').addEventListener('click', () => {
     document.querySelector('#collection').scrollIntoView({ behavior: 'smooth' });
     window.setTimeout(() => document.querySelector('#catalogSearch').focus(), 350);
@@ -494,7 +511,6 @@
   document.querySelectorAll('.feature-dialog [data-close-dialog]').forEach((button) => button.addEventListener('click', () => {
     const dialog = button.closest('dialog');
     dialog.close();
-    if (dialog === productDialog) restoreCollection();
   }));
   async function loadAccountOrders() {
     if (!store.getCustomer()) return;
@@ -519,8 +535,6 @@
   document.addEventListener('gombe:customer-state', loadAccountOrders);
   document.querySelector('#reviewSignIn').addEventListener('click', (event) => {
     if (event.target.closest('[data-open-account]')) {
-      productDialog.close();
-      restoreCollection();
       document.querySelector('.account-trigger').click();
     }
   });
@@ -540,15 +554,20 @@
       event.currentTarget.blur();
     }
   });
+  const getCurrentProductSlug = () => {
+    const match = window.location.pathname.match(/^\/products\/([^/]+)\/?$/);
+    return match
+      ? decodeURIComponent(match[1])
+      : new URLSearchParams(window.location.search).get('piece');
+  };
   const productPageMatch = window.location.pathname.match(/^\/products\/([^/]+)\/?$/);
   const sharedProduct = productPageMatch
     ? decodeURIComponent(productPageMatch[1])
     : new URLSearchParams(window.location.search).get('piece');
-  if (productPageMatch) document.body.classList.add('product-page-mode');
   if (sharedProduct) openProduct(sharedProduct, false);
   window.addEventListener('popstate', () => {
-    const slug = new URLSearchParams(window.location.search).get('piece');
+    const slug = getCurrentProductSlug();
     if (slug) openProduct(slug, false);
-    else if (productDialog.open) productDialog.close();
+    else restoreCollection(false);
   });
 })();

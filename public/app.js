@@ -348,6 +348,7 @@ document.querySelectorAll('.modal-close').forEach((button) => button.addEventLis
   button.closest('dialog')?.close();
   if (button.classList.contains('menu-close')) document.querySelector('#mobileMenu').classList.remove('open');
 }));
+
 document.querySelector('#referenceImage').addEventListener('change', (event) => {
   const label = document.querySelector('.upload-area strong');
   if (event.target.files[0]) label.textContent = event.target.files[0].name;
@@ -357,7 +358,8 @@ document.querySelector('#customForm').addEventListener('submit', async (event) =
   const form = new FormData(event.currentTarget);
   const file = form.get('referenceImage');
   const payload = Object.fromEntries(form.entries());
-  payload.imageName = file?.name || '';
+  delete payload.referenceImage;
+  payload.imageName = file instanceof File ? file.name : '';
   try {
     const response = await fetch('/api/custom-requests', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     if (!response.ok) throw new Error('Unable to submit');
@@ -458,6 +460,21 @@ document.querySelector('#newsletterForm').addEventListener('submit', async (even
   } finally {
     button.disabled = false;
   }
+});
+
+document.querySelector('#shippingForm')?.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const postalCode = document.querySelector('#shippingPostalCode')?.value?.trim();
+  const result = document.querySelector('#shippingResult');
+  if (!postalCode) {
+    result.textContent = 'Please enter a PIN or postal code to estimate delivery.';
+    return;
+  }
+  if (!/^[1-9]\d{5}$/.test(postalCode)) {
+    result.textContent = 'Enter a valid 6-digit Indian PIN code. Delivery timing is confirmed at checkout.';
+    return;
+  }
+  result.textContent = 'Typical dispatch is 2–4 business days for ready-to-ship pieces. Delivery timing for your address is confirmed at checkout. Free shipping over ₹2,000.';
 });
 
 document.querySelector('[data-open-menu]').addEventListener('click', () => document.querySelector('#mobileMenu').classList.add('open'));
