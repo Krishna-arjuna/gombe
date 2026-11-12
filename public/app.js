@@ -175,7 +175,7 @@ function quantityControl(slug, disabled = false) {
 }
 
 function updateSelectedQuantity(slug, change, control) {
-  const quantity = Math.min(99, Math.max(1, (selectedQuantities.get(slug) || 1) + change));
+  const quantity = Math.min(99, Math.max(0, (selectedQuantities.get(slug) || 0) + change));
   selectedQuantities.set(slug, quantity);
   const controls = [...document.querySelectorAll('[data-quantity-control]')]
     .filter((element) => element.dataset.quantityControl === slug);
