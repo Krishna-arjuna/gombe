@@ -166,9 +166,9 @@ function productCard(product) {
 }
 
 function quantityControl(slug, disabled = false) {
-  const quantity = selectedQuantities.get(slug) || 1;
+  const quantity = selectedQuantities.get(slug) || 0;
   return `<div class="quantity-control" data-quantity-control="${escapeHtml(slug)}" aria-label="Product quantity">
-    <button type="button" data-quantity-change="-1" aria-label="Decrease quantity" ${disabled || quantity <= 1 ? 'disabled' : ''}>−</button>
+    <button type="button" data-quantity-change="-1" aria-label="Decrease quantity" ${disabled || quantity <= 0 ? 'disabled' : ''}>−</button>
     <span data-quantity-value aria-live="polite">${quantity}</span>
     <button type="button" data-quantity-change="1" aria-label="Increase quantity" ${disabled || quantity >= 99 ? 'disabled' : ''}>+</button>
   </div>`;
