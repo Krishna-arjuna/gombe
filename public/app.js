@@ -166,7 +166,7 @@ function productCard(product) {
 }
 
 function quantityControl(slug, disabled = false) {
-  const quantity = selectedQuantities.get(slug) || 0;
+  const quantity = selectedQuantities.get(slug) ?? 0;
   return `<div class="quantity-control" data-quantity-control="${escapeHtml(slug)}" aria-label="Product quantity">
     <button type="button" data-quantity-change="-1" aria-label="Decrease quantity" ${disabled || quantity <= 0 ? 'disabled' : ''}>−</button>
     <span data-quantity-value aria-live="polite">${quantity}</span>
@@ -175,14 +175,14 @@ function quantityControl(slug, disabled = false) {
 }
 
 function updateSelectedQuantity(slug, change, control) {
-  const quantity = Math.min(99, Math.max(0, (selectedQuantities.get(slug) || 0) + change));
+  const quantity = Math.min(99, Math.max(0, (selectedQuantities.get(slug) ?? 0) + change));
   selectedQuantities.set(slug, quantity);
   const controls = [...document.querySelectorAll('[data-quantity-control]')]
     .filter((element) => element.dataset.quantityControl === slug);
   if (control && !controls.includes(control)) controls.push(control);
   controls.forEach((element) => {
     element.querySelector('[data-quantity-value]').textContent = quantity;
-    element.querySelector('[data-quantity-change="-1"]').disabled = quantity <= 1;
+    element.querySelector('[data-quantity-change="-1"]').disabled = quantity <= 0;
     element.querySelector('[data-quantity-change="1"]').disabled = quantity >= 99;
   });
 }
@@ -270,6 +270,11 @@ function showToast(message) {
 }
 
 function addToCart(slug, quantity = 1) {
+  const requested = Math.floor(Number(quantity));
+  if (!Number.isFinite(requested) || requested < 1) {
+    showToast('Choose a quantity before adding to your bag.');
+    return false;
+  }
   if (!customer) {
     requestAuthentication(() => addToCart(slug, quantity));
     return false;
@@ -282,7 +287,6 @@ function addToCart(slug, quantity = 1) {
   }
   const existing = cart.find((item) => item.slug === slug);
   const remaining = 99 - (existing?.quantity || 0);
-  const requested = Math.max(1, Math.floor(Number(quantity) || 1));
   const amount = Math.min(requested, remaining);
   if (!amount) {
     showToast(`${product.name} has reached the maximum quantity of 99.`);
@@ -362,7 +366,7 @@ productGrid.addEventListener('click', (event) => {
   const addButton = event.target.closest('[data-add]');
   const saveButton = event.target.closest('[data-save]');
   if (quantityButton) updateSelectedQuantity(quantityButton.closest('[data-quantity-control]').dataset.quantityControl, Number(quantityButton.dataset.quantityChange), quantityButton.closest('[data-quantity-control]'));
-  if (addButton) addToCart(addButton.dataset.add, selectedQuantities.get(addButton.dataset.add) || 1);
+  if (addButton) addToCart(addButton.dataset.add, selectedQuantities.get(addButton.dataset.add) ?? 0);
   if (saveButton) toggleWishlist(saveButton.dataset.save);
 });
 cartItems.addEventListener('click', (event) => {
@@ -586,7 +590,7 @@ window.GombeStorefront = {
   findProduct: getProduct,
   addToCart,
   quantityControl,
-  getSelectedQuantity: (slug) => selectedQuantities.get(slug) || 1,
+  getSelectedQuantity: (slug) => selectedQuantities.get(slug) ?? 0,
   renderProducts,
   clearCart: () => {
     cart = [];
