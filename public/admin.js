@@ -25,7 +25,7 @@ function escapeHtml(value) {
 
 function productImageUrl(value) {
   try {
-    if (/^\/uploads\/[a-f0-9]{32}\.(?:jpg|png|webp)$/.test(value)) return value;
+    if (/^\/(?:uploads\/[a-f0-9]{32}\.(?:jpg|png|webp)|api\/product-images\/[a-f0-9]{24})$/i.test(value)) return value;
     const url = new URL(value);
     return url.protocol === 'https:' ? url.href : '';
   } catch {
@@ -115,7 +115,7 @@ function renderProducts(products) {
       ${imageMarkup}
       <div class="product-row-info">
         <strong>${escapeHtml(product.name)}</strong>
-        <p>${escapeHtml(product.variant)} · ${escapeHtml(product.style)} · ${escapeHtml(product.ageGroup)} · ${product.inStock === false ? 'Out of stock' : 'In stock'}</p>
+        <p>${escapeHtml(product.collection || 'Children toys')} · ${escapeHtml(product.variant)} · ${escapeHtml(product.style)} · ${escapeHtml(product.ageGroup)} · ${product.inStock === false ? 'Out of stock' : 'In stock'}</p>
         <div class="product-row-price">${formatMoney(product.price)}</div>
       </div>
       <div class="row-actions">
@@ -185,6 +185,7 @@ function editProduct(product) {
   for (const field of ['name', 'price', 'style', 'variant', 'ageGroup', 'imageClass', 'badge', 'imageUrl', 'description', 'materials', 'dimensions', 'care']) {
     productForm.elements[field].value = product[field] ?? '';
   }
+  productForm.elements.collection.value = product.collection || 'Children toys';
   productForm.elements.inStock.value = String(product.inStock !== false);
   productForm.elements.images.value = (product.images || []).join('\n');
   renderImagePreview(document.querySelector('#mainImagePreview'), product.imageUrl ? [product.imageUrl] : []);

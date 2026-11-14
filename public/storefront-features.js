@@ -130,7 +130,7 @@
     visual.replaceChildren();
     const gallery = [...new Set([product.imageUrl, ...(Array.isArray(product.images) ? product.images : [])]
       .map((value) => {
-        if (/^\/uploads\/[a-f0-9]{32}\.(?:jpg|png|webp)$/.test(value)) return value;
+        if (/^\/(?:uploads\/[a-f0-9]{32}\.(?:jpg|png|webp)|api\/product-images\/[a-f0-9]{24})$/i.test(value)) return value;
         try {
           const parsed = new URL(value);
           return parsed.protocol === 'https:' ? parsed.href : '';
@@ -145,6 +145,8 @@
       const stage = document.createElement('div');
       stage.className = 'product-gallery-stage';
       const updatePhoto = () => {
+        photo.hidden = false;
+        photo.classList.remove('image-unavailable');
         photo.src = gallery[galleryIndex];
         photo.alt = `${product.name}, image ${galleryIndex + 1} of ${gallery.length}`;
         stage.classList.remove('zoomed');
@@ -160,6 +162,7 @@
       photo.onerror = () => {
         photo.alt = 'Product image could not be loaded';
         photo.classList.add('image-unavailable');
+        photo.hidden = true;
       };
       stage.append(photo);
       const zoom = document.createElement('button');
@@ -227,6 +230,9 @@
         <div class="product-details"><a class="product-name" href="/products/${encodeURIComponent(item.slug)}" data-detail="${escapeHtml(item.slug)}">${escapeHtml(item.name)}</a><span class="product-price">${formatMoney(item.price)}</span><span class="product-variant">${escapeHtml(item.variant)}</span></div>
       </article>`;
     }).join('');
+    document.querySelectorAll('#relatedProducts .product-photo').forEach((image) => {
+      image.addEventListener('error', () => image.remove(), { once: true });
+    });
     document.querySelector('#reviewList').innerHTML = '<p class="checkout-note">Loading verified customer reviews…</p>';
     document.querySelector('#reviewForm').hidden = !store.getCustomer();
     document.querySelector('#reviewSignIn').hidden = Boolean(store.getCustomer());

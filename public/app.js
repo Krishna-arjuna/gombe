@@ -10,6 +10,7 @@ const fallbackProducts = [
 let products = [...fallbackProducts];
 let visibleCount = 4;
 let sortByPrice = false;
+let activeCollection = 'All collections';
 let cart = [];
 let wishlist = new Set();
 let customer = null;
@@ -125,7 +126,7 @@ function escapeHtml(value) {
 }
 function safeProductImageUrl(value) {
   try {
-    if (/^\/uploads\/[a-f0-9]{32}\.(?:jpg|png|webp)$/.test(value)) return value;
+    if (/^\/(?:uploads\/[a-f0-9]{32}\.(?:jpg|png|webp)|api\/product-images\/[a-f0-9]{24})$/i.test(value)) return value;
     const url = new URL(value);
     return url.protocol === 'https:' ? url.href : '';
   } catch {
@@ -138,6 +139,7 @@ function selectedProducts() {
   const maxPrice = document.querySelector('#priceFilter').value;
   const search = (document.querySelector('#catalogSearch')?.value || '').trim().toLowerCase();
   return products.filter((product) =>
+    (activeCollection === 'All collections' || (product.collection || 'Children toys') === activeCollection) &&
     (style === 'All styles' || product.style === style) &&
     (age === 'All ages' || product.ageGroup === age) &&
     (!maxPrice || product.price <= Number(maxPrice)) &&
@@ -165,11 +167,19 @@ function renderProducts(reset = false) {
   if (reset) visibleCount = 4;
   const list = selectedProducts();
   productGrid.innerHTML = list.slice(0, visibleCount).map(productCard).join('');
+  productGrid.querySelectorAll('.product-photo').forEach((image) => {
+    image.addEventListener('error', () => image.remove(), { once: true });
+  });
   document.querySelector('#productTotal').textContent = `${String(list.length).padStart(2, '0')} ${list.length === 1 ? 'piece' : 'pieces'} to meet`;
   loadMore.hidden = list.length <= visibleCount;
   document.querySelector('#catalogNoResults').hidden = list.length > 0;
-  const filtersUsed = ['#styleFilter', '#ageFilter', '#priceFilter'].filter((selector) => document.querySelector(selector).value && !document.querySelector(selector).value.startsWith('All')).length;
+  const filtersUsed = ['#styleFilter', '#ageFilter', '#priceFilter'].filter((selector) => document.querySelector(selector).value && !document.querySelector(selector).value.startsWith('All')).length + (activeCollection === 'All collections' ? 0 : 1);
   document.querySelector('.filter-active-count').textContent = filtersUsed ? `(${filtersUsed})` : '';
+  document.querySelectorAll('[data-collection]').forEach((button) => {
+    const active = button.dataset.collection === activeCollection;
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-pressed', String(active));
+  });
 }
 
 function getProduct(slug) { return products.find((product) => product.slug === slug); }
@@ -347,6 +357,10 @@ wishlistItems.addEventListener('click', (event) => {
 });
 
 document.querySelectorAll('#styleFilter,#ageFilter,#priceFilter').forEach((select) => select.addEventListener('change', () => renderProducts(true)));
+document.querySelectorAll('[data-collection]').forEach((button) => button.addEventListener('click', () => {
+  activeCollection = button.dataset.collection;
+  renderProducts(true);
+}));
 loadMore.addEventListener('click', () => { visibleCount += 4; renderProducts(); });
 document.querySelector('.filter-toggle').addEventListener('click', () => filterBar.classList.toggle('open'));
 document.querySelector('.bag-trigger').addEventListener('click', () => openDrawer(cartDrawer));

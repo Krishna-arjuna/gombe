@@ -1,7 +1,6 @@
 import 'dotenv/config';
 import crypto from 'crypto';
 import express from 'express';
-import { mkdir, writeFile } from 'fs/promises';
 import mongoose from 'mongoose';
 import path from 'path';
 import { promisify } from 'util';
@@ -21,11 +20,18 @@ const customerAuthAttempts = new Map();
 
 app.use(express.json({ limit: '2mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
+app.get('/uploads/:filename', (_req, res) => res.sendStatus(404));
+
+function productImageBucket() {
+  if (!databaseReady || !mongoose.connection.db) return null;
+  return new mongoose.mongo.GridFSBucket(mongoose.connection.db, { bucketName: 'productImages' });
+}
 
 const productSchema = new mongoose.Schema({
   name: String,
   slug: { type: String, unique: true },
   price: Number,
+  collection: { type: String, enum: ['Children toys', 'Home decor and lifestyle', 'Education toys', 'Infant and toddler', 'Our gift choice', 'The GenZ'], default: 'Children toys' },
   style: String,
   ageGroup: String,
   color: String,
@@ -262,6 +268,7 @@ function customerAccountData(customer) {
 }
 
 function validateProduct(body) {
+  const allowedCollections = ['Children toys', 'Home decor and lifestyle', 'Education toys', 'Infant and toddler', 'Our gift choice', 'The GenZ'];
   const allowedStyles = ['Classic', 'Animal friends', 'Playful'];
   const allowedAgeGroups = ['1+ years', '3+ years', '6+ years'];
   const allowedImages = ['royal', 'peacock', 'wobble', 'menagerie', 'story', 'tops'];
@@ -272,6 +279,7 @@ function validateProduct(body) {
   const imageClass = body.imageClass;
   const badge = typeof body.badge === 'string' ? body.badge.trim() : '';
   const price = Number(body.price);
+  const collection = typeof body.collection === 'string' ? body.collection : '';
   const imageUrl = typeof body.imageUrl === 'string' ? body.imageUrl.trim() : '';
   const description = typeof body.description === 'string' ? body.description.trim() : '';
   const materials = typeof body.materials === 'string' ? body.materials.trim() : '';
@@ -283,6 +291,7 @@ function validateProduct(body) {
     : Array.isArray(body.images) ? body.images : [];
   const isAllowedImageUrl = (value) => {
     if (/^\/uploads\/[a-f0-9]{32}\.(?:jpg|png|webp)$/.test(value)) return true;
+    if (/^\/api\/product-images\/[a-f0-9]{24}$/i.test(value)) return true;
     try {
       return new URL(value).protocol === 'https:';
     } catch {
@@ -292,6 +301,7 @@ function validateProduct(body) {
 
   if (!name || name.length > 80) return { error: 'Name is required and must be 80 characters or fewer.' };
   if (!Number.isInteger(price) || price <= 0 || price > 10000000) return { error: 'Enter a whole-rupee price greater than ₹0 and no more than ₹1,00,00,000.' };
+  if (!allowedCollections.includes(collection)) return { error: 'Choose a valid product collection.' };
   if (!variant || variant.length > 80) return { error: 'Description is required and must be 80 characters or fewer.' };
   if (description.length > 1200 || materials.length > 160 || dimensions.length > 80 || care.length > 500) return { error: 'Product details exceed their allowed length.' };
   if (!allowedStyles.includes(style)) return { error: 'Choose a valid toy style.' };
@@ -313,6 +323,7 @@ function validateProduct(body) {
     product: {
       name,
       price,
+      collection,
       style,
       ageGroup,
       variant,
@@ -851,18 +862,48 @@ app.post(
     if (!imageType || !Buffer.isBuffer(req.body) || req.body.length === 0 || !imageType.matches(req.body)) {
       return res.status(400).json({ error: 'Upload a valid JPG, PNG, or WebP image no larger than 5 MB.' });
     }
+    const bucket = productImageBucket();
+    if (!bucket) return res.status(503).json({ error: 'Image storage is not available. Please try again later.' });
     try {
-      const filename = `${crypto.randomBytes(16).toString('hex')}.${imageType.extension}`;
-      const uploadDirectory = path.join(__dirname, 'public', 'uploads');
-      await mkdir(uploadDirectory, { recursive: true });
-      await writeFile(path.join(uploadDirectory, filename), req.body, { flag: 'wx' });
-      res.status(201).json({ url: `/uploads/${filename}` });
+      const uploadStream = bucket.openUploadStream(
+        `${crypto.randomBytes(16).toString('hex')}.${imageType.extension}`,
+        { metadata: { contentType } }
+      );
+      await new Promise((resolve, reject) => {
+        uploadStream.once('error', reject);
+        uploadStream.once('finish', resolve);
+        uploadStream.end(req.body);
+      });
+      res.status(201).json({ url: `/api/product-images/${uploadStream.id.toString()}` });
     } catch (error) {
-      console.error('Unable to save product image:', error);
+      console.error('Unable to save product image to MongoDB:', error);
       res.status(500).json({ error: 'Unable to save this product image right now.' });
     }
   }
 );
+
+app.get('/api/product-images/:id', async (req, res) => {
+  if (!/^[a-f\d]{24}$/i.test(req.params.id)) return res.sendStatus(404);
+  const bucket = productImageBucket();
+  if (!bucket) return res.status(503).json({ error: 'Image storage is not available. Please try again later.' });
+  try {
+    const imageId = new mongoose.Types.ObjectId(req.params.id);
+    const [file] = await bucket.find({ _id: imageId }).toArray();
+    if (!file) return res.sendStatus(404);
+    res.set('Content-Type', file.metadata?.contentType || 'application/octet-stream');
+    res.set('Cache-Control', 'public, max-age=31536000, immutable');
+    const downloadStream = bucket.openDownloadStream(imageId);
+    downloadStream.once('error', (error) => {
+      console.error('Unable to read product image from MongoDB:', error);
+      if (!res.headersSent) res.sendStatus(404);
+      else res.destroy();
+    });
+    downloadStream.pipe(res);
+  } catch (error) {
+    console.error('Unable to load product image:', error);
+    if (!res.headersSent) res.status(500).json({ error: 'Unable to load this product image right now.' });
+  }
+});
 
 app.get('/api/admin/orders', requireAdmin, async (_req, res) => {
   if (!databaseReady) return res.status(503).json({ error: 'Connect MongoDB to view customer orders.' });
