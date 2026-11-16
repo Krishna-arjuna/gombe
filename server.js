@@ -17,6 +17,7 @@ const customerCookieName = 'gombe_customer';
 const customerSessionDuration = 30 * 24 * 60 * 60;
 const loginAttempts = new Map();
 const customerAuthAttempts = new Map();
+const productCollections = ['Children toys', 'Home decor and lifestyle', 'Education toys', 'Infant and toddler', 'Our gift choice', 'The GenZ'];
 
 app.use(express.json({ limit: '2mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -31,7 +32,7 @@ const productSchema = new mongoose.Schema({
   name: String,
   slug: { type: String, unique: true },
   price: Number,
-  collection: { type: String, enum: ['Children toys', 'Home decor and lifestyle', 'Education toys', 'Infant and toddler', 'Our gift choice', 'The GenZ'], default: 'Children toys' },
+  productCollection: { type: String, enum: productCollections, default: 'Children toys' },
   style: String,
   ageGroup: String,
   color: String,
@@ -268,7 +269,6 @@ function customerAccountData(customer) {
 }
 
 function validateProduct(body) {
-  const allowedCollections = ['Children toys', 'Home decor and lifestyle', 'Education toys', 'Infant and toddler', 'Our gift choice', 'The GenZ'];
   const allowedStyles = ['Classic', 'Animal friends', 'Playful'];
   const allowedAgeGroups = ['1+ years', '3+ years', '6+ years'];
   const allowedImages = ['royal', 'peacock', 'wobble', 'menagerie', 'story', 'tops'];
@@ -301,7 +301,7 @@ function validateProduct(body) {
 
   if (!name || name.length > 80) return { error: 'Name is required and must be 80 characters or fewer.' };
   if (!Number.isInteger(price) || price <= 0 || price > 10000000) return { error: 'Enter a whole-rupee price greater than ₹0 and no more than ₹1,00,00,000.' };
-  if (!allowedCollections.includes(collection)) return { error: 'Choose a valid product collection.' };
+  if (!productCollections.includes(collection)) return { error: 'Choose a valid product collection.' };
   if (!variant || variant.length > 80) return { error: 'Description is required and must be 80 characters or fewer.' };
   if (description.length > 1200 || materials.length > 160 || dimensions.length > 80 || care.length > 500) return { error: 'Product details exceed their allowed length.' };
   if (!allowedStyles.includes(style)) return { error: 'Choose a valid toy style.' };
@@ -323,7 +323,7 @@ function validateProduct(body) {
     product: {
       name,
       price,
-      collection,
+      productCollection: collection,
       style,
       ageGroup,
       variant,
@@ -347,11 +347,19 @@ let databaseReady = false;
 if (process.env.MONGODB_URI) {
   mongoose.connect(process.env.MONGODB_URI)
     .then(async () => {
+      await Product.collection.updateMany(
+        { collection: { $exists: true }, productCollection: { $exists: false } },
+        { $rename: { collection: 'productCollection' } }
+      );
+      await Product.collection.updateMany(
+        { productCollection: { $nin: productCollections } },
+        { $set: { productCollection: 'Children toys' } }
+      );
       databaseReady = true;
       if (await Product.countDocuments() === 0) await Product.insertMany(catalog);
       console.log('Connected to MongoDB');
     })
-    .catch((error) => console.warn(`MongoDB unavailable; serving demo catalog. ${error.message}`));
+    .catch((error) => console.warn(`MongoDB unavailable or product setup failed; serving demo catalog. ${error.message}`));
 } else {
   console.warn('MONGODB_URI is not set; serving demo catalog. Add it in .env to persist products and requests.');
 }
@@ -363,6 +371,12 @@ function filterCatalog(items, query) {
     (!age || age === 'All ages' || item.ageGroup === age) &&
     (!maxPrice || item.price <= Number(maxPrice))
   );
+}
+
+function productForClient(product) {
+  const data = typeof product.toObject === 'function' ? product.toObject() : product;
+  const { productCollection, collection, ...fields } = data;
+  return { ...fields, collection: productCollection || collection || 'Children toys' };
 }
 
 function razorpayConfigured() {
@@ -402,7 +416,7 @@ function orderForCustomer(order) {
 app.get('/api/products', async (req, res) => {
   try {
     const items = databaseReady ? await Product.find().sort({ createdAt: -1 }).lean() : catalog;
-    res.json(filterCatalog(items, req.query));
+    res.json(filterCatalog(items, req.query).map(productForClient));
   } catch (error) {
     res.status(500).json({ error: 'Unable to load the collection.' });
   }
@@ -838,7 +852,8 @@ app.post('/api/admin/logout', requireSameOrigin, requireAdmin, (_req, res) => {
 app.get('/api/admin/products', requireAdmin, async (_req, res) => {
   if (!databaseReady) return res.status(503).json({ error: 'Connect MongoDB to manage and save products.' });
   try {
-    res.json(await Product.find().sort({ createdAt: -1 }).lean());
+    const products = await Product.find().sort({ createdAt: -1 }).lean();
+    res.json(products.map(productForClient));
   } catch (error) {
     console.error('Unable to load admin products:', error);
     res.status(500).json({ error: 'Unable to load products right now.' });
@@ -957,7 +972,7 @@ app.post('/api/admin/products', requireSameOrigin, requireAdmin, async (req, res
     let suffix = 2;
     while (await Product.exists({ slug })) slug = `${baseSlug}-${suffix++}`;
     const product = await Product.create({ ...result.product, slug });
-    res.status(201).json(product);
+    res.status(201).json(productForClient(product));
   } catch (error) {
     console.error('Unable to create admin product:', error);
     res.status(500).json({ error: 'Unable to save this product right now.' });
@@ -977,7 +992,7 @@ app.put('/api/admin/products/:slug', requireSameOrigin, requireAdmin, async (req
       { new: true, runValidators: true }
     );
     if (!product) return res.status(404).json({ error: 'Product not found.' });
-    res.json(product);
+    res.json(productForClient(product));
   } catch (error) {
     console.error('Unable to update admin product:', error);
     res.status(500).json({ error: 'Unable to update this product right now.' });
@@ -1012,7 +1027,28 @@ app.post('/api/custom-requests', async (req, res) => {
 
 app.get('/admin', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
 
-app.get('*', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
+app.get('/products/:slug', async (req, res) => {
+  if (!databaseReady && mongoose.connection.readyState !== 0) {
+    res.set('Retry-After', '2');
+    return res.status(503).send('The product catalog is still loading. Please try again shortly.');
+  }
+
+  try {
+    const exists = databaseReady
+      ? await Product.exists({ slug: req.params.slug })
+      : catalog.some((product) => product.slug === req.params.slug);
+    if (!exists) return res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  } catch (error) {
+    console.error('Unable to resolve product page:', error);
+    res.status(500).send('Unable to load this product right now.');
+  }
+});
+
+app.use((req, res) => {
+  if (req.path.startsWith('/api/')) return res.status(404).json({ error: 'Not found.' });
+  res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
+});
 
 function startServer(candidatePort = Number(port)) {
   const server = app.listen(candidatePort, () => {

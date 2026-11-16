@@ -138,44 +138,102 @@
       }).filter(Boolean))];
     if (gallery.length) {
       galleryIndex = 0;
+      const galleryLayout = document.createElement('div');
+      galleryLayout.className = 'product-gallery-layout';
       const photo = document.createElement('img');
       photo.className = 'product-dialog-photo';
       photo.alt = product.name;
       photo.loading = 'lazy';
       const stage = document.createElement('div');
       stage.className = 'product-gallery-stage';
+      const magnifier = document.createElement('div');
+      magnifier.className = 'gallery-magnifier';
+      magnifier.setAttribute('aria-hidden', 'true');
+      const magnifiedPhoto = document.createElement('img');
+      magnifiedPhoto.className = 'gallery-magnified-photo';
+      magnifiedPhoto.alt = '';
+      magnifiedPhoto.draggable = false;
+      magnifier.append(magnifiedPhoto);
+      const zoomMarker = document.createElement('span');
+      zoomMarker.className = 'gallery-zoom-marker';
+      zoomMarker.setAttribute('aria-hidden', 'true');
+      zoomMarker.textContent = '+';
+      let magnifierPinned = false;
+      const setMagnifierVisible = (visible) => {
+        const isVisible = visible || magnifierPinned;
+        stage.classList.toggle('magnifier-visible', isVisible);
+        magnifier.setAttribute('aria-hidden', String(!isVisible));
+        zoom.setAttribute('aria-pressed', String(magnifierPinned));
+        zoom.setAttribute('aria-label', magnifierPinned ? 'Turn off product zoom' : 'Zoom product photo');
+      };
+      const updateMagnifierPosition = (event) => {
+        const bounds = stage.getBoundingClientRect();
+        const x = Math.max(0, Math.min(bounds.width, event.clientX - bounds.left));
+        const y = Math.max(0, Math.min(bounds.height, event.clientY - bounds.top));
+        const scale = 2.25;
+        const paneWidth = magnifier.clientWidth || bounds.width;
+        const paneHeight = magnifier.clientHeight || bounds.height;
+        magnifiedPhoto.style.width = `${bounds.width}px`;
+        magnifiedPhoto.style.height = `${bounds.height}px`;
+        magnifiedPhoto.style.left = `${paneWidth / 2 - x * scale}px`;
+        magnifiedPhoto.style.top = `${paneHeight / 2 - y * scale}px`;
+        magnifiedPhoto.style.transform = `scale(${scale})`;
+        zoomMarker.style.left = `${x}px`;
+        zoomMarker.style.top = `${y}px`;
+      };
       const updatePhoto = () => {
         photo.hidden = false;
         photo.classList.remove('image-unavailable');
         photo.src = gallery[galleryIndex];
+        magnifiedPhoto.src = gallery[galleryIndex];
         photo.alt = `${product.name}, image ${galleryIndex + 1} of ${gallery.length}`;
-        stage.classList.remove('zoomed');
+        magnifierPinned = false;
+        setMagnifierVisible(false);
+        galleryLayout.querySelectorAll('.product-gallery-thumb').forEach((thumbnail, index) => {
+          const active = index === galleryIndex;
+          thumbnail.classList.toggle('active', active);
+          thumbnail.setAttribute('aria-current', String(active));
+        });
         const count = stage.querySelector('.gallery-count');
         if (count) count.textContent = `${galleryIndex + 1} / ${gallery.length}`;
         const zoomButton = stage.querySelector('.gallery-zoom');
         if (zoomButton) {
-          zoomButton.textContent = 'Zoom image';
+          zoomButton.textContent = '+';
           zoomButton.setAttribute('aria-pressed', 'false');
+          zoomButton.setAttribute('aria-label', 'Zoom product photo');
         }
       };
-      photo.addEventListener('click', () => stage.classList.toggle('zoomed'));
       photo.onerror = () => {
         photo.alt = 'Product image could not be loaded';
         photo.classList.add('image-unavailable');
         photo.hidden = true;
+        setMagnifierVisible(false);
       };
       stage.append(photo);
       const zoom = document.createElement('button');
       zoom.type = 'button';
       zoom.className = 'gallery-zoom';
-      zoom.textContent = 'Zoom image';
+      zoom.textContent = '+';
+      zoom.setAttribute('aria-label', 'Zoom product photo');
       zoom.setAttribute('aria-pressed', 'false');
       zoom.addEventListener('click', () => {
-        const zoomed = stage.classList.toggle('zoomed');
-        zoom.setAttribute('aria-pressed', String(zoomed));
-        zoom.textContent = zoomed ? 'Reset image' : 'Zoom image';
+        magnifierPinned = !magnifierPinned;
+        setMagnifierVisible(magnifierPinned);
+        if (magnifierPinned) {
+          const bounds = stage.getBoundingClientRect();
+          updateMagnifierPosition({ clientX: bounds.left + bounds.width / 2, clientY: bounds.top + bounds.height / 2 });
+        }
       });
       stage.append(zoom);
+      stage.append(magnifier, zoomMarker);
+      stage.addEventListener('pointermove', (event) => {
+        if (event.pointerType === 'touch' && !magnifierPinned) return;
+        updateMagnifierPosition(event);
+        setMagnifierVisible(event.pointerType !== 'touch' || magnifierPinned);
+      });
+      stage.addEventListener('pointerleave', (event) => {
+        if (event.pointerType !== 'touch' && !magnifierPinned) setMagnifierVisible(false);
+      });
       if (gallery.length > 1) {
         const previous = document.createElement('button');
         previous.type = 'button';
@@ -199,7 +257,32 @@
         count.className = 'gallery-count';
         stage.append(previous, next, count);
       }
-      visual.append(stage);
+      galleryLayout.append(stage);
+      if (gallery.length > 1) {
+        const thumbnails = document.createElement('div');
+        thumbnails.className = 'product-gallery-thumbnails';
+        thumbnails.setAttribute('role', 'group');
+        thumbnails.setAttribute('aria-label', 'Other product angles');
+        gallery.forEach((source, index) => {
+          const thumbnail = document.createElement('button');
+          thumbnail.type = 'button';
+          thumbnail.className = 'product-gallery-thumb';
+          thumbnail.setAttribute('aria-label', `Show product photo ${index + 1}`);
+          thumbnail.setAttribute('aria-current', 'false');
+          const thumbnailImage = document.createElement('img');
+          thumbnailImage.src = source;
+          thumbnailImage.alt = '';
+          thumbnailImage.loading = 'lazy';
+          thumbnail.append(thumbnailImage);
+          thumbnail.addEventListener('click', () => {
+            galleryIndex = index;
+            updatePhoto();
+          });
+          thumbnails.append(thumbnail);
+        });
+        galleryLayout.append(thumbnails);
+      }
+      visual.append(galleryLayout);
       if (gallery.length === 1) stage.querySelector('.gallery-count')?.remove();
       updatePhoto();
     } else {
