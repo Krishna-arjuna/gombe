@@ -9,7 +9,7 @@ const fallbackProducts = [
 
 let products = [...fallbackProducts];
 let visibleCount = 4;
-let sortByPrice = false;
+let sortMode = 'featured';
 let activeCollection = 'All collections';
 let cart = [];
 let wishlist = new Set();
@@ -138,13 +138,18 @@ function selectedProducts() {
   const age = document.querySelector('#ageFilter').value;
   const maxPrice = document.querySelector('#priceFilter').value;
   const search = (document.querySelector('#catalogSearch')?.value || '').trim().toLowerCase();
-  return products.filter((product) =>
+  const matches = products.filter((product) =>
     (activeCollection === 'All collections' || (product.collection || 'Children toys') === activeCollection) &&
     (style === 'All styles' || product.style === style) &&
     (age === 'All ages' || product.ageGroup === age) &&
     (!maxPrice || product.price <= Number(maxPrice)) &&
     (!search || `${product.name} ${product.variant} ${product.style} ${product.ageGroup}`.toLowerCase().includes(search))
   );
+  if (sortMode === 'price-low') return [...matches].sort((a, b) => a.price - b.price);
+  if (sortMode === 'price-high') return [...matches].sort((a, b) => b.price - a.price);
+  if (sortMode === 'name') return [...matches].sort((a, b) => a.name.localeCompare(b.name));
+  if (sortMode === 'newest') return [...matches].reverse();
+  return matches;
 }
 
 function productCard(product) {
@@ -159,7 +164,7 @@ function productCard(product) {
       <button class="card-heart ${isSaved ? 'saved' : ''}" data-save="${escapeHtml(product.slug)}" aria-label="${isSaved ? 'Remove from' : 'Save to'} wishlist">${isSaved ? '♥' : '♡'}</button>
       <button class="quick-add" data-add="${escapeHtml(product.slug)}" ${available ? '' : 'disabled'}>${available ? 'Add to bag <span>+</span>' : 'Sold out'}</button>
     </div>
-    <div class="product-details"><a class="product-name product-detail-trigger" href="/products/${encodeURIComponent(product.slug)}" data-detail="${escapeHtml(product.slug)}">${escapeHtml(product.name)}</a><span class="product-price">${money(product.price)}</span><span class="product-variant">${escapeHtml(product.variant)}</span></div>
+    <div class="product-details"><a class="product-name product-detail-trigger" href="/products/${encodeURIComponent(product.slug)}" data-detail="${escapeHtml(product.slug)}">${escapeHtml(product.name)}</a><span class="product-price">${money(product.price)}</span><span class="product-variant">${escapeHtml(product.variant)}</span><span class="product-rating" aria-label="${Number(product.rating || 5).toFixed(1)} out of 5 stars">${Number(product.rating || 5).toFixed(1)} ★ <small>(${Number(product.reviews || 0)})</small></span></div>
   </article>`;
 }
 
@@ -180,6 +185,31 @@ function renderProducts(reset = false) {
     button.classList.toggle('active', active);
     button.setAttribute('aria-pressed', String(active));
   });
+  const chips = [];
+  if (activeCollection !== 'All collections') chips.push(['collection', activeCollection]);
+  const style = document.querySelector('#styleFilter').value;
+  const age = document.querySelector('#ageFilter').value;
+  const maxPrice = document.querySelector('#priceFilter').value;
+  const search = document.querySelector('#catalogSearch')?.value.trim();
+  if (style !== 'All styles') chips.push(['style', style]);
+  if (age !== 'All ages') chips.push(['age', age]);
+  if (maxPrice) chips.push(['price', `Under ${money(Number(maxPrice))}`]);
+  if (search) chips.push(['search', `“${search}”`]);
+  const chipRow = document.querySelector('#activeFilterRow');
+  const chipList = document.querySelector('#activeFilterChips');
+  chipRow.hidden = chips.length === 0;
+  chipList.innerHTML = chips.map(([key, value]) => `<button type="button" data-clear-filter="${escapeHtml(key)}">${escapeHtml(value)} <span>×</span></button>`).join('');
+}
+
+function renderHighlights(mode = 'featured') {
+  const grid = document.querySelector('#highlightGrid');
+  if (!grid) return;
+  let highlights = [...products];
+  if (mode === 'new') highlights = highlights.filter((product) => product.badge === 'New').concat(highlights.filter((product) => product.badge !== 'New')).slice(0, 4);
+  if (mode === 'bestsellers') highlights = highlights.filter((product) => product.badge === 'Bestseller' || (Number(product.reviews) >= 65)).slice(0, 4);
+  if (mode === 'featured') highlights = highlights.slice(0, 4);
+  if (!highlights.length) highlights = products.slice(0, 4);
+  grid.innerHTML = highlights.map(productCard).join('');
 }
 
 function getProduct(slug) { return products.find((product) => product.slug === slug); }
@@ -208,13 +238,26 @@ function syncCustomerState(data, mergeGuest = false) {
 function updateCustomerInterface() {
   const accountLabel = document.querySelector('.account-trigger .action-label');
   const accountButton = document.querySelector('.account-trigger');
+  const accountMenu = document.querySelector('#accountMenu');
+  const accountMenuGreeting = document.querySelector('#accountMenuGreeting');
   document.querySelector('#authForm').hidden = Boolean(customer);
   document.querySelector('.auth-tabs').hidden = Boolean(customer);
   document.querySelector('#authSignedIn').hidden = !customer;
   accountLabel.textContent = customer ? customer.name : 'Log in';
   accountButton.setAttribute('aria-label', customer ? `Account for ${customer.name}` : 'Log in or sign up');
-  if (customer) document.querySelector('#authSignedInDetails').textContent = customer.email;
+  accountButton.setAttribute('aria-expanded', 'false');
+  accountMenu.hidden = true;
+  if (customer) {
+    document.querySelector('#authSignedInDetails').textContent = customer.email;
+    accountMenuGreeting.textContent = customer.name;
+  } else {
+    accountMenuGreeting.textContent = '';
+  }
   document.dispatchEvent(new CustomEvent('gombe:customer-state'));
+}
+function closeAccountMenu() {
+  document.querySelector('#accountMenu').hidden = true;
+  document.querySelector('.account-trigger').setAttribute('aria-expanded', 'false');
 }
 function persistAccountState() {
   if (!customer) return;
@@ -361,6 +404,33 @@ document.querySelectorAll('[data-collection]').forEach((button) => button.addEve
   activeCollection = button.dataset.collection;
   renderProducts(true);
 }));
+document.querySelector('#catalogSearch')?.addEventListener('input', () => renderProducts(true));
+document.querySelector('#activeFilterChips')?.addEventListener('click', (event) => {
+  const key = event.target.closest('[data-clear-filter]')?.dataset.clearFilter;
+  if (!key) return;
+  if (key === 'collection') activeCollection = 'All collections';
+  if (key === 'style') document.querySelector('#styleFilter').value = 'All styles';
+  if (key === 'age') document.querySelector('#ageFilter').value = 'All ages';
+  if (key === 'price') document.querySelector('#priceFilter').value = '';
+  if (key === 'search') document.querySelector('#catalogSearch').value = '';
+  renderProducts(true);
+});
+document.querySelector('#clearFilters')?.addEventListener('click', () => {
+  activeCollection = 'All collections';
+  document.querySelector('#styleFilter').value = 'All styles';
+  document.querySelector('#ageFilter').value = 'All ages';
+  document.querySelector('#priceFilter').value = '';
+  document.querySelector('#catalogSearch').value = '';
+  renderProducts(true);
+});
+document.querySelectorAll('[data-highlight]').forEach((tab) => tab.addEventListener('click', () => {
+  document.querySelectorAll('[data-highlight]').forEach((button) => {
+    const active = button === tab;
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-selected', String(active));
+  });
+  renderHighlights(tab.dataset.highlight);
+}));
 loadMore.addEventListener('click', () => { visibleCount += 4; renderProducts(); });
 document.querySelector('.filter-toggle').addEventListener('click', () => filterBar.classList.toggle('open'));
 document.querySelector('.bag-trigger').addEventListener('click', () => openDrawer(cartDrawer));
@@ -388,8 +458,40 @@ function openCustomModal() {
 document.querySelectorAll('.custom-trigger').forEach((button) => button.addEventListener('click', openCustomModal));
 document.querySelector('.account-trigger').addEventListener('click', () => {
   pendingAccountAction = null;
+  if (customer) {
+    const accountMenu = document.querySelector('#accountMenu');
+    const isOpen = !accountMenu.hidden;
+    closeAccountMenu();
+    if (!isOpen) {
+      accountMenu.hidden = false;
+      document.querySelector('.account-trigger').setAttribute('aria-expanded', 'true');
+    }
+    return;
+  }
   document.querySelector('#authMessage').textContent = '';
   authModal.showModal();
+});
+document.querySelector('#accountMenu').addEventListener('click', (event) => {
+  const action = event.target.closest('[data-account-action]')?.dataset.accountAction;
+  if (!action) return;
+  closeAccountMenu();
+  if (action === 'profile' || action === 'orders') {
+    document.querySelector('#authMessage').textContent = '';
+    authModal.showModal();
+    document.dispatchEvent(new CustomEvent(action === 'orders' ? 'gombe:open-account-orders' : 'gombe:open-account-profile'));
+  } else if (action === 'wishlist') {
+    document.querySelector('.wishlist-trigger').click();
+  } else if (action === 'bag') {
+    document.querySelector('.bag-trigger').click();
+  } else if (action === 'logout') {
+    document.querySelector('#customerLogout').click();
+  }
+});
+document.addEventListener('click', (event) => {
+  if (!event.target.closest('.account-menu-wrap')) closeAccountMenu();
+});
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') closeAccountMenu();
 });
 document.querySelectorAll('.modal-close').forEach((button) => button.addEventListener('click', () => {
   button.closest('dialog')?.close();
@@ -529,10 +631,10 @@ document.querySelector('#shippingForm')?.addEventListener('submit', (event) => {
 
 document.querySelector('[data-open-menu]').addEventListener('click', () => document.querySelector('#mobileMenu').classList.add('open'));
 document.querySelectorAll('#mobileMenu nav a').forEach((link) => link.addEventListener('click', () => document.querySelector('#mobileMenu').classList.remove('open')));
-document.querySelector('#sortButton').addEventListener('click', () => {
-  sortByPrice = true;
-  products = [...products].sort((a, b) => a.price - b.price);
-  document.querySelector('#sortButton').innerHTML = 'Sort: Price low to high <svg><use href="#i-chevron"/></svg>';
+document.querySelector('.mobile-bag-trigger')?.addEventListener('click', () => openDrawer(cartDrawer));
+document.querySelector('.mobile-account-trigger')?.addEventListener('click', () => document.querySelector('.account-trigger').click());
+document.querySelector('#sortSelect')?.addEventListener('change', (event) => {
+  sortMode = event.target.value;
   renderProducts(true);
 });
 window.addEventListener('scroll', () => document.querySelector('#siteHeader').classList.toggle('scrolled', window.scrollY > 80));
@@ -543,11 +645,12 @@ async function loadCatalog() {
     if (response.ok) {
       const data = await response.json();
       if (Array.isArray(data)) {
-        products = sortByPrice ? data.sort((a, b) => a.price - b.price) : data;
+        products = data;
       }
     }
   } catch { /* A static preview still works with the curated fallback catalog. */ }
   renderProducts();
+  renderHighlights();
 }
 
 window.addEventListener('focus', loadCatalog);
@@ -571,4 +674,5 @@ window.GombeStorefront = {
   money
 };
 window.GombeStorefront.catalogReady = loadCatalog();
+renderHighlights();
 window.GombeStorefront.catalogReady.then(loadCustomerSession);

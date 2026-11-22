@@ -17,7 +17,7 @@ const customerCookieName = 'gombe_customer';
 const customerSessionDuration = 30 * 24 * 60 * 60;
 const loginAttempts = new Map();
 const customerAuthAttempts = new Map();
-const productCollections = ['Children toys', 'Home decor and lifestyle', 'Education toys', 'Infant and toddler', 'Our gift choice', 'The GenZ'];
+const productCollections = ['Children toys', 'Home decor and lifestyle', 'Education toys', 'Infant and toddler', 'Our gift choice', 'The GenZ', 'Handicrafts'];
 
 app.use(express.json({ limit: '2mb' }));
 app.use(express.static(path.join(__dirname, 'public')));

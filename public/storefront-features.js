@@ -620,7 +620,11 @@
       orderArea.innerHTML = `<p class="feature-form-message">${escapeHtml(error.message)}</p>`;
     }
   }
-  document.querySelector('.account-trigger').addEventListener('click', loadAccountOrders);
+  document.addEventListener('gombe:open-account-profile', loadAccountOrders);
+  document.addEventListener('gombe:open-account-orders', async () => {
+    await loadAccountOrders();
+    document.querySelector('#accountOrders')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
   document.addEventListener('gombe:customer-state', loadAccountOrders);
   document.querySelector('#reviewSignIn').addEventListener('click', (event) => {
     if (event.target.closest('[data-open-account]')) {

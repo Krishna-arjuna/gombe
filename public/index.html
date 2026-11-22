@@ -20,7 +20,17 @@
       <a class="wordmark" href="#top" aria-label="Gombe home">GOMBE<span></span></a>
       <div class="header-actions">
         <button class="icon-button search-trigger" id="searchTrigger" aria-label="Search"><svg><use href="#i-search"/></svg></button>
-        <button class="icon-button account-trigger" aria-label="Log in or sign up"><svg><use href="#i-user"/></svg><span class="action-label">Log in</span></button>
+        <div class="account-menu-wrap">
+          <button class="icon-button account-trigger" aria-label="Log in or sign up" aria-haspopup="true" aria-expanded="false" aria-controls="accountMenu"><svg><use href="#i-user"/></svg><span class="action-label">Log in</span><span class="account-chevron" aria-hidden="true">⌄</span></button>
+          <nav class="account-menu" id="accountMenu" aria-label="Your account" hidden>
+            <div class="account-menu-heading"><strong>Your Account</strong><span id="accountMenuGreeting"></span></div>
+            <button type="button" class="account-menu-item" data-account-action="profile"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20c.7-3.4 3.4-5.2 7.5-5.2s6.8 1.8 7.5 5.2"/></svg><span>My Profile</span></button>
+            <button type="button" class="account-menu-item" data-account-action="orders"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16l-1 12H5L4 8Z"/><path d="M8 9V6a4 4 0 0 1 8 0v3"/></svg><span>Orders</span></button>
+            <button type="button" class="account-menu-item" data-account-action="wishlist"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.4 5.7a5.1 5.1 0 0 0-7.2 0L12 6.9l-1.2-1.2a5.1 5.1 0 0 0-7.2 7.2L12 21l8.4-8.1a5.1 5.1 0 0 0 0-7.2Z"/></svg><span>Saved pieces</span></button>
+            <button type="button" class="account-menu-item" data-account-action="bag"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg><span>My bag</span></button>
+            <button type="button" class="account-menu-item account-menu-logout" data-account-action="logout"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17l5-5-5-5M15 12H3"/><path d="M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7"/></svg><span>Log out</span></button>
+          </nav>
+        </div>
         <button class="icon-button wishlist-trigger" aria-label="Open wishlist"><svg><use href="#i-heart"/></svg><b class="count wishlist-count">0</b></button>
         <button class="icon-button bag-trigger" aria-label="Open bag"><svg><use href="#i-bag"/></svg><b class="count bag-count">0</b></button>
       </div>
@@ -75,6 +85,19 @@
         <div class="maker-story-copy"><p class="eyebrow">MADE IN CHANNAPATNA</p><h2>A craft carried<br><em>from hand to hand.</em></h2><p>In Channapatna, wood meets the lathe, colour meets careful hands, and familiar shapes become characters with a life of their own. Gombe celebrates the makers and the living craft behind every piece.</p><div class="maker-steps"><span><b>01</b> Turned with care</span><span><b>02</b> Painted by hand</span><span><b>03</b> Ready for a story</span></div><a class="arrow-link" href="#collection">Meet the collection <span>→</span></a></div>
       </section>
 
+      <section class="shop-highlights" id="new" aria-labelledby="shopHighlightsTitle">
+        <div class="section-head shop-highlights-head">
+          <div><p class="eyebrow">CURATED FOR YOU</p><h2 id="shopHighlightsTitle">Featured<br><em>little favourites.</em></h2></div>
+          <div class="highlight-tabs" role="tablist" aria-label="Featured products">
+            <button type="button" class="active" role="tab" aria-selected="true" data-highlight="featured">Featured</button>
+            <button type="button" role="tab" aria-selected="false" data-highlight="new">New arrivals</button>
+            <button type="button" role="tab" aria-selected="false" data-highlight="bestsellers">Best sellers</button>
+          </div>
+        </div>
+        <div class="product-grid highlight-grid" id="highlightGrid"></div>
+        <a class="arrow-link shop-all-link" href="#collection">Explore the full collection <span>→</span></a>
+      </section>
+
       <section class="collection-section" id="collection">
         <div class="section-head"><div><p class="eyebrow">THE COLLECTION</p><h2>Small worlds,<br><em>big imagination.</em></h2></div><p class="product-total" id="productTotal">06 pieces to meet</p></div>
         <nav class="collection-choices" aria-label="Shop by collection">
@@ -85,19 +108,30 @@
           <button type="button" class="collection-choice" data-collection="Infant and toddler" aria-pressed="false">Infant and toddler</button>
           <button type="button" class="collection-choice" data-collection="Our gift choice" aria-pressed="false">Our gift choice</button>
           <button type="button" class="collection-choice" data-collection="The GenZ" aria-pressed="false">The GenZ</button>
+          <button type="button" class="collection-choice" data-collection="Handicrafts" aria-pressed="false">Handicrafts</button>
         </nav>
         <div class="catalog-toolbar">
           <button class="filter-toggle"><svg><use href="#i-sliders"/></svg> Filter <span class="filter-active-count"></span></button>
           <div class="filters" id="filterBar"><div class="filter-field"><label for="styleFilter">Style</label><select id="styleFilter"><option>All styles</option><option>Classic</option><option>Animal friends</option><option>Playful</option></select></div><div class="filter-field"><label for="ageFilter">For</label><select id="ageFilter"><option>All ages</option><option>1+ years</option><option>3+ years</option><option>6+ years</option></select></div><div class="filter-field"><label for="priceFilter">Price</label><select id="priceFilter"><option value="">Any price</option><option value="45">Under ₹45</option><option value="70">Under ₹70</option><option value="100">Under ₹100</option></select></div></div>
-          <button class="sort-button" id="sortButton">Sort: Featured <svg><use href="#i-chevron"/></svg></button>
+          <div class="catalog-sort">
+            <label for="sortSelect">Sort</label>
+            <select id="sortSelect" class="sort-button">
+              <option value="featured">Featured</option>
+              <option value="price-low">Price: low to high</option>
+              <option value="price-high">Price: high to low</option>
+              <option value="name">Name: A to Z</option>
+              <option value="newest">Newest</option>
+            </select>
+          </div>
         </div>
         <label class="catalog-search"><svg><use href="#i-search"/></svg><input id="catalogSearch" type="search" placeholder="Search the collection" aria-label="Search products"><span>Search by name, style or age</span></label>
+        <div class="active-filter-row" id="activeFilterRow" hidden><span>Filtered by</span><div id="activeFilterChips"></div><button type="button" id="clearFilters">Clear all</button></div>
         <div class="product-grid" id="productGrid"></div>
         <p class="catalog-no-results" id="catalogNoResults" hidden>No pieces match those filters. Try another search or clear your filters.</p>
         <button class="load-more" id="loadMore">See more pieces <span>↓</span></button>
       </section>
 
-      <section class="studio-section" id="new">
+      <section class="studio-section" id="custom-studio">
         <div class="studio-image"><div class="image-badge">YOUR<br>STORY,<br>TURNED.</div></div>
         <div class="studio-copy"><p class="eyebrow">GOMBE STUDIO</p><h2>A keepsake,<br><em>made just for them.</em></h2><p>Bring a little person, a favourite animal, or an impossible idea. Our master artisans will turn it into a one-of-a-kind wooden companion.</p><button class="button button-light custom-trigger">Begin a custom piece <span>↗</span></button><small>From sketch to doorstep in 4–6 weeks</small></div>
       </section>
@@ -195,6 +229,12 @@
     <dialog class="auth-modal" id="authModal"><button class="modal-close" aria-label="Close account dialog">×</button><div class="auth-mark">G</div><div class="auth-tabs"><button class="active" data-auth-tab="login">Sign in</button><button data-auth-tab="signup">Create account</button></div><form id="authForm"><h2 id="authTitle">Welcome back.</h2><p id="authSubtext">Sign in to see your saved pieces and orders.</p><p class="auth-message" id="authMessage" role="alert" aria-live="polite"></p><label class="name-field" hidden>NAME<input type="text" name="name" autocomplete="name" maxlength="80" placeholder="Your full name"></label><label>EMAIL<input type="email" name="email" autocomplete="email" required maxlength="254" placeholder="you@email.com"></label><label>PASSWORD<input type="password" name="password" autocomplete="current-password" required minlength="8" maxlength="128" placeholder="At least 8 characters"></label><a class="forgot" href="#forgot">Forgot password?</a><button class="button button-dark" type="submit">Sign in <span>→</span></button></form><div id="authSignedIn" hidden><h2>You're signed in.</h2><p id="authSignedInDetails"></p><button class="button button-dark" id="customerLogout" type="button">Sign out <span>→</span></button></div><p class="legal">By continuing, you agree to Gombe’s Terms and Privacy Policy.</p></dialog>
 
     <div class="mobile-menu" id="mobileMenu"><button class="modal-close menu-close" aria-label="Close menu">×</button><a class="wordmark" href="#top">GOMBE<span></span></a><nav><a href="#collection">Shop <span>↗</span></a><a href="#new">New arrivals <span>↗</span></a><a href="#craft">Our craft <span>↗</span></a><a href="#gifts">Gifts <span>↗</span></a></nav><button class="text-button custom-trigger">Create your own <span>↗</span></button></div>
+    <nav class="mobile-bottom-nav" aria-label="Mobile navigation">
+      <a href="#top"><svg><use href="#i-menu"/></svg><span>Home</span></a>
+      <a href="#collection"><svg><use href="#i-search"/></svg><span>Shop</span></a>
+      <button type="button" class="mobile-bag-trigger"><svg><use href="#i-bag"/></svg><b class="count bag-count">0</b><span>Bag</span></button>
+      <button type="button" class="mobile-account-trigger"><svg><use href="#i-user"/></svg><span>Account</span></button>
+    </nav>
     <div class="toast" id="toast" role="status"></div>
 
     <svg class="svg-defs" xmlns="http://www.w3.org/2000/svg"><symbol id="i-menu" viewBox="0 0 24 24"><path d="M3 7h18M3 12h18M3 17h18"/></symbol><symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></symbol><symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20c.7-3.4 3.4-5.2 7.5-5.2s6.8 1.8 7.5 5.2"/></symbol><symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.4 5.7a5.1 5.1 0 0 0-7.2 0L12 6.9l-1.2-1.2a5.1 5.1 0 0 0-7.2 7.2L12 21l8.4-8.1a5.1 5.1 0 0 0 0-7.2Z"/></symbol><symbol id="i-bag" viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></symbol><symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7h16M4 17h16M8 4v6M16 14v6"/></symbol><symbol id="i-chevron" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5"/></symbol></svg>

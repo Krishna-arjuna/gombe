@@ -222,3 +222,23 @@
 .product-gallery-stage:has(.image-unavailable)::after{content:"Product photo unavailable";position:absolute;color:#626862;font-size:12px}
 .community-review-card{min-height:280px}
 @media(max-width:800px){.product-gallery-stage{min-height:330px;height:330px}}
+.account-menu-wrap{position:relative;display:flex;align-items:center}
+.account-trigger[aria-expanded="true"] .account-chevron{transform:rotate(180deg)}
+.account-chevron{margin-left:2px;font:14px/1 var(--sans);transition:transform .18s ease}
+.account-menu[hidden]{display:none}
+.account-menu{position:absolute;z-index:30;top:calc(100% + 17px);right:-92px;width:min(310px,calc(100vw - 24px));padding:10px 0 8px;border:1px solid rgba(30,36,32,.16);border-radius:18px;background:#fff;box-shadow:0 12px 34px rgba(20,24,21,.18);color:#353733}
+.account-menu::before{position:absolute;top:-7px;right:104px;width:12px;height:12px;transform:rotate(45deg);border-top:1px solid rgba(30,36,32,.16);border-left:1px solid rgba(30,36,32,.16);background:#fff;content:""}
+.account-menu-heading{display:grid;gap:4px;padding:13px 22px 10px}
+.account-menu-heading strong{font:600 16px var(--sans)}
+.account-menu-heading span{overflow:hidden;color:#73766f;font:11px var(--sans);text-overflow:ellipsis;white-space:nowrap}
+.account-menu-item{display:flex;width:100%;min-height:46px;align-items:center;gap:14px;padding:9px 22px;border:0;background:#fff;color:inherit;text-align:left;font:14px var(--sans);cursor:pointer}
+.account-menu-item:hover,.account-menu-item:focus-visible{background:#f5f3ee}
+.account-menu-item:focus-visible{outline:2px solid var(--green);outline-offset:-2px}
+.account-menu-item svg{width:19px;height:19px;flex:0 0 19px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.account-menu-logout{margin-top:5px;border-top:1px solid rgba(30,36,32,.12);padding-top:13px}
+@media(max-width:600px){
+  .account-menu{right:-70px;top:calc(100% + 12px);width:min(300px,calc(100vw - 24px));border-radius:15px}
+  .account-menu::before{right:82px}
+  .account-menu-item{min-height:44px;padding-right:18px;padding-left:18px;font-size:13px}
+  .account-menu-heading{padding-right:18px;padding-left:18px}
+}
