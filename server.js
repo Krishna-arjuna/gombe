@@ -1045,6 +1045,27 @@ app.get('/products/:slug', async (req, res) => {
   }
 });
 
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    message: 'Gombe server is running'
+  });
+});
+
+// Existing 404 handler
+app.use((req, res) => {
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: 'Not found.' });
+  }
+
+  res.status(404).sendFile(
+    path.join(__dirname, 'public', '404.html')
+  );
+});
+
+
 app.use((req, res) => {
   if (req.path.startsWith('/api/')) return res.status(404).json({ error: 'Not found.' });
   res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
@@ -1074,9 +1095,3 @@ function startServer(candidatePort = Number(port)) {
 
 startServer();
 
-app.get('/health', (req, res) => {
-  res.status(200).json({
-    status: 'ok',
-    message: 'Gombe server is running'
-  });
-});
