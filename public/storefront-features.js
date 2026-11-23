@@ -120,6 +120,56 @@
     if (!pendingPayment) store.clearCart();
   }
 
+  function renderOrderJourney(order) {
+    const result = document.querySelector('#trackingResult');
+    const statusLabels = {
+      awaiting_payment: 'Payment confirmation pending',
+      placed: 'Order placed',
+      processing: 'Being prepared',
+      shipped: 'On the way',
+      delivered: 'Delivered',
+      cancelled: 'Order cancelled'
+    };
+    const stageDescriptions = {
+      placed: 'We have your order and the workshop is getting it ready.',
+      processing: 'Your order is being carefully prepared for its journey.',
+      shipped: 'Your parcel has left us and is on its way to you.',
+      delivered: 'Your order has reached its destination. We hope it brings joy.',
+      cancelled: 'This order has been cancelled. Please contact our team if you need help.',
+      awaiting_payment: 'We are waiting for payment confirmation before preparing your order.'
+    };
+    const stages = [
+      { id: 'placed', label: 'Order placed' },
+      { id: 'processing', label: 'Being prepared' },
+      { id: 'shipped', label: 'On the way' },
+      { id: 'delivered', label: 'Delivered' }
+    ];
+    const currentStage = order.status === 'awaiting_payment' ? -1 : stages.findIndex((stage) => stage.id === order.status);
+    const cancelled = order.status === 'cancelled';
+    const progress = cancelled || currentStage < 0 ? 0 : [0, 33.333, 66.667, 100][currentStage];
+    const safeStatus = statusLabels[order.status] ? order.status : 'placed';
+    const currentLabel = statusLabels[order.status] || statusLabels.placed;
+    const stepItems = stages.map((stage, index) => {
+      const state = index < currentStage ? 'complete' : index === currentStage ? 'current' : 'upcoming';
+      return `<li class="journey-step ${state}"><button type="button" data-journey-step="${stage.id}" aria-current="${state === 'current' ? 'step' : 'false'}" aria-pressed="false"><span class="journey-step-marker">${index < currentStage ? '✓' : index + 1}</span><span>${stage.label}</span></button></li>`;
+    }).join('');
+    result.innerHTML = `<article class="tracking-result">
+      <div class="tracking-order-heading"><div><p class="eyebrow">ORDER ${escapeHtml(order.trackingCode)}</p><h3>${escapeHtml(currentLabel)}</h3></div><button class="tracking-refresh" type="button" data-refresh-tracking aria-label="Refresh order status">Refresh ↻</button></div>
+      ${cancelled ? `<p class="journey-cancelled">${escapeHtml(stageDescriptions.cancelled)}</p>` : `<div class="delivery-journey ${order.status === 'awaiting_payment' ? 'journey-pending' : ''}" data-order-status="${safeStatus}" style="--journey-progress:${progress}%">
+        <div class="journey-route" role="img" aria-label="${escapeHtml(currentLabel)}. This progress illustration is based on the latest order status, not live GPS tracking.">
+          <span class="journey-route-fill"></span>
+          <span class="journey-vehicle" aria-hidden="true"><svg viewBox="0 0 48 32" focusable="false"><path d="M3 7h25v18H3zM28 13h9l7 8v4H28z"/><path d="M32 14v7h9M10 28a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM36 28a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/></svg></span>
+        </div>
+        <ol class="journey-stops">${stepItems}</ol>
+        <p class="journey-note" id="journeyNote" aria-live="polite">${escapeHtml(order.status === 'awaiting_payment' ? stageDescriptions.awaiting_payment : stageDescriptions[order.status] || stageDescriptions.placed)}</p>
+        <p class="journey-disclaimer">Illustrated progress follows order updates; it does not show the courier’s live location.</p>
+      </div>`}
+      <div class="tracking-order-items"><p>${order.items.map((item) => `${escapeHtml(item.name)} × ${item.quantity}`).join(' · ')}</p><p>${formatMoney(order.total)} · ${escapeHtml(order.paymentMethod.toUpperCase())} · Payment ${escapeHtml(order.paymentStatus.replace(/_/g, ' '))}</p><time>Placed ${new Date(order.createdAt).toLocaleDateString()}</time></div>
+    </article>`;
+    result.dataset.reference = order.trackingCode;
+    result.dataset.email = document.querySelector('#trackingForm [name="email"]').value.trim();
+  }
+
   async function openProduct(slug, updateUrl = true) {
     await store.catalogReady;
     const product = store.findProduct(slug);
@@ -526,10 +576,30 @@
     try {
       const params = new URLSearchParams({ reference: form.get('reference'), email: form.get('email') });
       const data = await requestJson(`/api/orders/track?${params}`);
-      const order = data.order;
-      result.innerHTML = `<article class="tracking-result"><p class="eyebrow">ORDER ${escapeHtml(order.trackingCode)}</p><h3>${escapeHtml(order.status.replace(/_/g, ' '))}</h3><p>${order.items.map((item) => `${escapeHtml(item.name)} × ${item.quantity}`).join(' · ')}</p><p>${formatMoney(order.total)} · ${escapeHtml(order.paymentMethod.toUpperCase())} · Payment ${escapeHtml(order.paymentStatus.replace(/_/g, ' '))}</p><time>${new Date(order.createdAt).toLocaleDateString()}</time></article>`;
+      renderOrderJourney(data.order);
     } catch (error) {
       showMessage(message, error.message);
+    }
+  });
+  document.querySelector('#trackingResult').addEventListener('click', (event) => {
+    const step = event.target.closest('[data-journey-step]');
+    if (step) {
+      const descriptions = {
+        placed: 'We have your order and the workshop is getting it ready.',
+        processing: 'Your order is being carefully prepared for its journey.',
+        shipped: 'Your parcel has left us and is on its way to you.',
+        delivered: 'Your order has reached its destination. We hope it brings joy.'
+      };
+      document.querySelectorAll('.journey-step button').forEach((button) => button.setAttribute('aria-pressed', 'false'));
+      step.setAttribute('aria-pressed', 'true');
+      document.querySelector('#journeyNote').textContent = descriptions[step.dataset.journeyStep];
+      return;
+    }
+    if (event.target.closest('[data-refresh-tracking]')) {
+      const form = document.querySelector('#trackingForm');
+      form.elements.reference.value = document.querySelector('#trackingResult').dataset.reference;
+      form.elements.email.value = document.querySelector('#trackingResult').dataset.email;
+      form.requestSubmit();
     }
   });
 

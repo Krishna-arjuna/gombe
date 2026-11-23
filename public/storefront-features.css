@@ -93,12 +93,35 @@
 .bag-quantity button:disabled{opacity:.4;cursor:not-allowed}
 .bag-quantity span{min-width:36px;text-align:center;font:10px var(--mono)}
 .cart-drawer .drawer-item-info p{margin-bottom:8px}
-.tracking-dialog,.support-dialog{padding:42px;max-width:590px}
+.tracking-dialog,.support-dialog{padding:42px;max-width:700px}
 .tracking-dialog>p:not(.eyebrow),.support-dialog>p:not(.eyebrow){max-width:420px;color:#626862;font-size:13px;line-height:1.6}
 .feature-form{display:grid;gap:15px;margin-top:25px}
 .tracking-result{padding:18px;margin:4px 0;background:#ece5d9}
 .tracking-result h3{font:500 25px var(--serif);text-transform:capitalize;margin:0 0 10px}
 .tracking-result p{font-size:12px;line-height:1.5}
+.tracking-order-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.tracking-order-heading .eyebrow{margin-bottom:10px}
+.tracking-refresh{border:1px solid var(--line);background:#f8f5ef;padding:8px 10px;font:9px var(--mono);letter-spacing:.04em}
+.delivery-journey{--journey-progress:0%;margin:12px 0 18px;padding:22px 4px 14px;background:#f8f5ef;border:1px solid rgba(30,36,32,.1)}
+.journey-route{height:5px;margin:0 8px 0;position:relative;background:#d5d1c8;border-radius:4px}
+.journey-route-fill{display:block;width:var(--journey-progress);height:100%;border-radius:4px;background:var(--green);transition:width .8s cubic-bezier(.2,.7,.2,1)}
+.journey-vehicle{position:absolute;z-index:2;left:var(--journey-progress);top:50%;width:43px;height:34px;display:grid;place-items:center;transform:translate(-50%,-76%);transition:left .8s cubic-bezier(.2,.7,.2,1);color:var(--ink)}
+.journey-vehicle svg{width:43px;height:31px;fill:var(--yellow);stroke:var(--ink);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 2px 2px rgba(30,36,32,.15))}
+.journey-stops{list-style:none;padding:0;margin:13px 0 0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
+.journey-step{min-width:0;text-align:center}
+.journey-step button{min-height:53px;display:flex;flex-direction:column;align-items:center;gap:6px;width:100%;padding:0 2px;border:0;background:transparent;color:#777d76;font-size:9px;line-height:1.2}
+.journey-step button:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+.journey-step-marker{width:19px;height:19px;display:grid;place-items:center;border:1px solid #b8b9b1;border-radius:50%;background:#f8f5ef;font:9px var(--mono);transition:background .2s,color .2s,border-color .2s}
+.journey-step.complete .journey-step-marker,.journey-step.current .journey-step-marker{border-color:var(--green);background:var(--green);color:white}
+.journey-step.current button{color:var(--ink);font-weight:600}
+.journey-step button[aria-pressed="true"] .journey-step-marker{outline:2px solid var(--yellow);outline-offset:2px}
+.journey-note{min-height:38px;margin:16px 8px 0!important;padding:11px 12px;background:#ece5d9;font-size:11px!important}
+.journey-disclaimer{margin:11px 8px 0!important;color:#6b706a;font-size:9px!important}
+.journey-pending .journey-vehicle svg{fill:#ddd8cd}
+.journey-cancelled{padding:14px;background:#f8f5ef;border-left:3px solid var(--red)}
+.tracking-order-items{border-top:1px solid var(--line);padding-top:10px}
+.tracking-order-items p{margin:8px 0}
+.tracking-order-items time{display:block;margin-top:8px;color:#6a706a;font:9px var(--mono)}
 .account-orders{margin:23px 0;border-top:1px solid var(--line);padding-top:17px}
 .account-orders>article{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
 .account-orders>article span{font-size:10px;color:#626862;text-transform:capitalize}
@@ -135,6 +158,7 @@
   .account-orders>article button{grid-column:2;grid-row:1/3}
 }
 @media(prefers-reduced-motion:reduce){.faq-list summary span{transition:none}}
+@media(prefers-reduced-motion:reduce){.journey-route-fill,.journey-vehicle,.journey-step-marker{transition:none}}
 .maker-story{display:grid;grid-template-columns:1fr 1fr;background:#f0ebe2}
 .maker-story-image{position:relative;min-height:510px;overflow:hidden}
 .maker-story-image img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
