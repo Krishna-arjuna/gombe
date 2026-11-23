@@ -1073,3 +1073,10 @@ function startServer(candidatePort = Number(port)) {
 }
 
 startServer();
+
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    message: 'Gombe server is running'
+  });
+});

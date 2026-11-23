@@ -168,6 +168,21 @@ function productCard(product) {
   </article>`;
 }
 
+function productThumbnail(product) {
+  const imageUrl = safeProductImageUrl(product.imageUrl) || safeProductImageUrl(product.images?.[0]);
+  const illustration = art[product.imageClass] || `<span class="drawer-photo-fallback">GOMBE</span>`;
+  const image = imageUrl
+    ? `<img class="drawer-product-photo" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(product.name)}" loading="eager">`
+    : '';
+  return `<div class="drawer-item-art ${escapeHtml(product.imageClass || '')}">${illustration}${image}</div>`;
+}
+
+function watchDrawerPhotos(container) {
+  container.querySelectorAll('.drawer-product-photo').forEach((image) => {
+    image.addEventListener('error', () => image.remove(), { once: true });
+  });
+}
+
 function renderProducts(reset = false) {
   if (reset) visibleCount = 4;
   const list = selectedProducts();
@@ -337,7 +352,8 @@ function updateCartQuantity(slug, change) {
   persistAccountState();
 }
 function renderCart() {
-  cartItems.innerHTML = cart.map((item) => `<div class="drawer-item"><div class="drawer-item-art ${item.imageClass}">${art[item.imageClass]}</div><div class="drawer-item-info"><h3>${escapeHtml(item.name)}</h3><p>${escapeHtml(item.variant)}</p><strong>${money(item.price * item.quantity)}</strong><div class="bag-quantity" aria-label="${escapeHtml(item.name)} quantity"><button type="button" data-cart-change="-1" data-cart-quantity="${escapeHtml(item.slug)}" aria-label="Decrease ${escapeHtml(item.name)} quantity" ${item.quantity <= 1 ? 'disabled' : ''}>−</button><span>Qty ${item.quantity}</span><button type="button" data-cart-change="1" data-cart-quantity="${escapeHtml(item.slug)}" aria-label="Increase ${escapeHtml(item.name)} quantity" ${item.quantity >= 99 ? 'disabled' : ''}>+</button></div></div><button class="remove-item" data-remove-cart="${escapeHtml(item.slug)}" aria-label="Remove ${escapeHtml(item.name)}">×</button></div>`).join('');
+  cartItems.innerHTML = cart.map((item) => `<div class="drawer-item">${productThumbnail(item)}<div class="drawer-item-info"><h3>${escapeHtml(item.name)}</h3><p>${escapeHtml(item.variant)}</p><strong>${money(item.price * item.quantity)}</strong><div class="bag-quantity" aria-label="${escapeHtml(item.name)} quantity"><button type="button" data-cart-change="-1" data-cart-quantity="${escapeHtml(item.slug)}" aria-label="Decrease ${escapeHtml(item.name)} quantity" ${item.quantity <= 1 ? 'disabled' : ''}>−</button><span>Qty ${item.quantity}</span><button type="button" data-cart-change="1" data-cart-quantity="${escapeHtml(item.slug)}" aria-label="Increase ${escapeHtml(item.name)} quantity" ${item.quantity >= 99 ? 'disabled' : ''}>+</button></div></div><button class="remove-item" data-remove-cart="${escapeHtml(item.slug)}" aria-label="Remove ${escapeHtml(item.name)}">×</button></div>`).join('');
+  watchDrawerPhotos(cartItems);
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   document.querySelector('#cartSubtotal').textContent = money(subtotal);
   document.querySelector('#shippingMessage').textContent = 'Delivery options and any applicable fees are confirmed for your address at checkout.';
@@ -346,7 +362,8 @@ function renderCart() {
 }
 function renderWishlist() {
   const saved = [...wishlist].map(getProduct).filter(Boolean);
-  wishlistItems.innerHTML = saved.map((item) => `<div class="drawer-item"><div class="drawer-item-art ${item.imageClass}">${art[item.imageClass]}</div><div class="drawer-item-info"><h3>${escapeHtml(item.name)}</h3><p>${escapeHtml(item.variant)} · ${money(item.price)}</p><button class="add-from-wish" data-add="${escapeHtml(item.slug)}">Add to bag</button></div><button class="remove-item" data-remove-wish="${escapeHtml(item.slug)}" aria-label="Remove ${escapeHtml(item.name)}">×</button></div>`).join('');
+  wishlistItems.innerHTML = saved.map((item) => `<div class="drawer-item">${productThumbnail(item)}<div class="drawer-item-info"><h3>${escapeHtml(item.name)}</h3><p>${escapeHtml(item.variant)} · ${money(item.price)}</p><button class="add-from-wish" data-add="${escapeHtml(item.slug)}">Add to bag</button></div><button class="remove-item" data-remove-wish="${escapeHtml(item.slug)}" aria-label="Remove ${escapeHtml(item.name)}">×</button></div>`).join('');
+  watchDrawerPhotos(wishlistItems);
   wishlistEmpty.classList.toggle('visible', saved.length === 0);
 }
 
