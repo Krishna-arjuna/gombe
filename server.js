@@ -1194,14 +1194,15 @@ app.get('/sitemap.xml', async (_req, res) => {
       : catalog;
 
     const urls = [
-      { loc: 'https://commitmint.in/' },
-      ...products.map((product) => ({
-        loc: `https://commitmint.in/products/${encodeURIComponent(product.slug)}`,
-        lastmod: product.updatedAt
-          ? new Date(product.updatedAt).toISOString().split('T')[0]
-          : undefined
-      }))
-    ];
+        { loc: 'https://commitmint.in/' },
+        { loc: 'https://commitmint.in/shipping-policy' },
+        ...products.map((product) => ({
+          loc: `https://commitmint.in/products/${encodeURIComponent(product.slug)}`,
+          lastmod: product.updatedAt
+            ? new Date(product.updatedAt).toISOString().split('T')[0]
+            : undefined
+        }))
+      ];
 
     const xmlEscape = (value) =>
       String(value).replace(/[<>&'"]/g, (char) => ({
