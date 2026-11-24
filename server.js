@@ -1096,14 +1096,18 @@ app.get('/products/:slug', async (req, res) => {
   itemCondition: 'https://schema.org/NewCondition',
 
   hasMerchantReturnPolicy: {
-    '@type': 'MerchantReturnPolicy',
-    applicableCountry: 'IN',
-    returnPolicyCategory:
-      'https://schema.org/MerchantReturnFiniteReturnWindow',
-    merchantReturnDays: 7,
-    itemDefectReturnFees:
-      'https://schema.org/FreeReturn'
-  }
+  '@type': 'MerchantReturnPolicy',
+  applicableCountry: 'IN',
+  returnPolicyCategory:
+    'https://schema.org/MerchantReturnFiniteReturnWindow',
+  merchantReturnDays: 7,
+  returnMethod:
+    'https://schema.org/ReturnByMail',
+  returnFees:
+    'https://schema.org/FreeReturn',
+  itemDefectReturnFees:
+    'https://schema.org/FreeReturn'
+}
 }
     };
 
