@@ -1054,6 +1054,54 @@ app.get('/health', (req, res) => {
   });
 });
 
+
+/* Dynamic XML Sitemap for Google */
+app.get('/sitemap.xml', async (_req, res) => {
+  try {
+    // Fetch products from MongoDB, or use demo catalog
+    const products = databaseReady
+      ? await Product.find().select('slug updatedAt').lean()
+      : catalog;
+
+    const urls = [
+      { loc: 'https://commitmint.in/' },
+      ...products.map((product) => ({
+        loc: `https://commitmint.in/products/${encodeURIComponent(product.slug)}`,
+        lastmod: product.updatedAt
+          ? new Date(product.updatedAt).toISOString().split('T')[0]
+          : undefined
+      }))
+    ];
+
+    const xmlEscape = (value) =>
+      String(value).replace(/[<>&'"]/g, (char) => ({
+        '<': '&lt;',
+        '>': '&gt;',
+        '&': '&amp;',
+        "'": '&apos;',
+        '"': '&quot;'
+      })[char]);
+
+    const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls.map(({ loc, lastmod }) => `
+  <url>
+    <loc>${xmlEscape(loc)}</loc>
+    ${lastmod ? `<lastmod>${xmlEscape(lastmod)}</lastmod>` : ''}
+  </url>`).join('')}
+</urlset>`;
+
+    res.status(200)
+      .type('application/xml')
+      .send(sitemap);
+
+  } catch (error) {
+    console.error('Unable to generate sitemap:', error);
+    res.status(500).send('Unable to generate sitemap.');
+  }
+});
+
+
 // Existing 404 handler
 app.use((req, res) => {
   if (req.path.startsWith('/api/')) {
