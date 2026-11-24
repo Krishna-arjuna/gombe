@@ -1086,15 +1086,25 @@ app.get('/products/:slug', async (req, res) => {
       category: product.productCollection || 'Handcrafted wooden products',
       ...(imageUrl ? { image: [imageUrl] } : {}),
       offers: {
-        '@type': 'Offer',
-        url: canonicalUrl,
-        priceCurrency: 'INR',
-        price: String(product.price),
-        availability: product.inStock === false
-          ? 'https://schema.org/OutOfStock'
-          : 'https://schema.org/InStock',
-        itemCondition: 'https://schema.org/NewCondition'
-      }
+  '@type': 'Offer',
+  url: canonicalUrl,
+  priceCurrency: 'INR',
+  price: String(product.price),
+  availability: product.inStock === false
+    ? 'https://schema.org/OutOfStock'
+    : 'https://schema.org/InStock',
+  itemCondition: 'https://schema.org/NewCondition',
+
+  hasMerchantReturnPolicy: {
+    '@type': 'MerchantReturnPolicy',
+    applicableCountry: 'IN',
+    returnPolicyCategory:
+      'https://schema.org/MerchantReturnFiniteReturnWindow',
+    merchantReturnDays: 7,
+    itemDefectReturnFees:
+      'https://schema.org/FreeReturn'
+  }
+}
     };
 
     if (product.rating > 0 && product.reviews > 0) {
