@@ -1138,10 +1138,14 @@ app.get('/products/:slug', async (req, res) => {
     );
 
     // Replace generic homepage metadata with product-specific metadata
-    const updatedHtml = html.replace(
-      /<head([^>]*)>/i,
-      (match) => `${match}\n${seoTags}`
-    );
+    const cleanedHtml = html
+      .replace(/<title>[\s\S]*?<\/title>/i, '')
+      .replace(/<meta\s+name=["']description["'][^>]*>/i, '');
+
+    const updatedHtml = cleanedHtml.replace(
+        /<head([^>]*)>/i,
+        (match) => `${match}\n${seoTags}`
+      );
 
     res.status(200).type('html').send(updatedHtml);
 
