@@ -5,6 +5,7 @@ import mongoose from 'mongoose';
 import path from 'path';
 import { promisify } from 'util';
 import { fileURLToPath } from 'url';
+import { readFile } from 'fs/promises';
 
 const scrypt = promisify(crypto.scrypt);
 const __filename = fileURLToPath(import.meta.url);
@@ -1027,23 +1028,129 @@ app.post('/api/custom-requests', async (req, res) => {
 
 app.get('/admin', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
 
+
+// SEO-friendly product pages
 app.get('/products/:slug', async (req, res) => {
   if (!databaseReady && mongoose.connection.readyState !== 0) {
     res.set('Retry-After', '2');
-    return res.status(503).send('The product catalog is still loading. Please try again shortly.');
+    return res.status(503).send(
+      'The product catalog is still loading. Please try again shortly.'
+    );
   }
 
   try {
-    const exists = databaseReady
-      ? await Product.exists({ slug: req.params.slug })
-      : catalog.some((product) => product.slug === req.params.slug);
-    if (!exists) return res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    const product = databaseReady
+      ? await Product.findOne({ slug: req.params.slug }).lean()
+      : catalog.find((item) => item.slug === req.params.slug);
+
+    if (!product) {
+      return res.status(404).sendFile(
+        path.join(__dirname, 'public', '404.html')
+      );
+    }
+
+    const escapeHtml = (value = '') =>
+      String(value).replace(/[&<>"']/g, (char) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      })[char]);
+
+    const title = `${product.name} | Handcrafted Channapatna Wooden Craft | Gombe`;
+
+    const description = product.description?.trim()
+      || `${product.name} by Gombe. Discover handcrafted Channapatna wooden toys and traditional craft.`;
+
+    const canonicalUrl =
+      `https://commitmint.in/products/${encodeURIComponent(product.slug)}`;
+
+    // Support both MongoDB GridFS images and HTTPS image URLs
+    const imagePath = product.imageUrl || product.images?.[0] || '';
+
+    const imageUrl = imagePath.startsWith('/')
+      ? `https://commitmint.in${imagePath}`
+      : imagePath;
+
+    const structuredProduct = {
+      '@context': 'https://schema.org',
+      '@type': 'Product',
+      name: product.name,
+      description,
+      sku: product.slug,
+      brand: {
+        '@type': 'Brand',
+        name: 'Gombe'
+      },
+      category: product.productCollection || 'Handcrafted wooden products',
+      ...(imageUrl ? { image: [imageUrl] } : {}),
+      offers: {
+        '@type': 'Offer',
+        url: canonicalUrl,
+        priceCurrency: 'INR',
+        price: String(product.price),
+        availability: product.inStock === false
+          ? 'https://schema.org/OutOfStock'
+          : 'https://schema.org/InStock',
+        itemCondition: 'https://schema.org/NewCondition'
+      }
+    };
+
+    if (product.rating > 0 && product.reviews > 0) {
+      structuredProduct.aggregateRating = {
+        '@type': 'AggregateRating',
+        ratingValue: product.rating,
+        reviewCount: product.reviews,
+        bestRating: 5,
+        worstRating: 1
+      };
+    }
+
+    // Safely serialize JSON-LD for HTML
+    const jsonLd = JSON.stringify(structuredProduct)
+      .replace(/</g, '\\u003c')
+      .replace(/>/g, '\\u003e')
+      .replace(/&/g, '\\u0026');
+
+    const seoTags = `
+      <title>${escapeHtml(title)}</title>
+      <meta name="description" content="${escapeHtml(description)}" />
+      <link rel="canonical" href="${escapeHtml(canonicalUrl)}" />
+
+      <meta property="og:type" content="product" />
+      <meta property="og:title" content="${escapeHtml(title)}" />
+      <meta property="og:description" content="${escapeHtml(description)}" />
+      <meta property="og:url" content="${escapeHtml(canonicalUrl)}" />
+      ${imageUrl ? `<meta property="og:image" content="${escapeHtml(imageUrl)}" />` : ''}
+
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:title" content="${escapeHtml(title)}" />
+      <meta name="twitter:description" content="${escapeHtml(description)}" />
+      ${imageUrl ? `<meta name="twitter:image" content="${escapeHtml(imageUrl)}" />` : ''}
+
+      <script type="application/ld+json">${jsonLd}</script>
+    `;
+
+    const html = await readFile(
+      path.join(__dirname, 'public', 'index.html'),
+      'utf8'
+    );
+
+    // Replace generic homepage metadata with product-specific metadata
+    const updatedHtml = html.replace(
+      /<head([^>]*)>/i,
+      (match) => `${match}\n${seoTags}`
+    );
+
+    res.status(200).type('html').send(updatedHtml);
+
   } catch (error) {
     console.error('Unable to resolve product page:', error);
     res.status(500).send('Unable to load this product right now.');
   }
 });
+
 
 
 // Health check endpoint
