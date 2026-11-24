@@ -1,0 +1,409 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Shipping & Returns Policy | Gombe</title>
+  <meta name="description" content="Explore Gombe's national and international shipping rates, free shipping thresholds, eligible delivery countries and returns policy.">
+
+  <link rel="canonical" href="https://commitmint.in/shipping-policy">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: #f8f5ef;
+      color: #29271f;
+      font-family: 'DM Sans', sans-serif;
+      line-height: 1.7;
+    }
+
+    a { color: inherit; }
+
+    .topbar {
+      padding: 22px 7%;
+      border-bottom: 1px solid #e7e0d4;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 29px;
+      letter-spacing: 5px;
+      text-decoration: none;
+    }
+
+    .back-link {
+      text-decoration: none;
+      font-size: 13px;
+    }
+
+    .container {
+      max-width: 940px;
+      margin: auto;
+      padding: 65px 24px 90px;
+    }
+
+    .eyebrow {
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      font-size: 11px;
+      color: #927b55;
+      font-weight: 700;
+    }
+
+    h1, h2, h3 {
+      font-family: 'Playfair Display', serif;
+      font-weight: 500;
+    }
+
+    h1 {
+      font-size: clamp(38px, 6vw, 58px);
+      line-height: 1.15;
+      margin: 12px 0;
+    }
+
+    .intro {
+      color: #777064;
+      max-width: 650px;
+      margin-bottom: 45px;
+    }
+
+    .policy-card {
+      background: #fffefa;
+      border: 1px solid #e9e2d7;
+      border-radius: 14px;
+      padding: 30px;
+      margin: 22px 0;
+    }
+
+    .policy-card h2 {
+      font-size: 29px;
+      margin: 0 0 15px;
+    }
+
+    .rate-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin-top: 22px;
+    }
+
+    .rate {
+      background: #f5f0e7;
+      border-radius: 10px;
+      padding: 20px;
+    }
+
+    .rate strong {
+      display: block;
+      font-size: 27px;
+      margin: 5px 0;
+    }
+
+    .free { color: #47764d; }
+
+    .country-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      padding: 0;
+      list-style: none;
+    }
+
+    .country-grid li {
+      background: #f5f0e7;
+      border-radius: 7px;
+      padding: 10px 13px;
+      font-size: 14px;
+    }
+
+    .note {
+      font-size: 13px;
+      color: #777064;
+    }
+
+    footer {
+      text-align: center;
+      padding: 25px;
+      border-top: 1px solid #e7e0d4;
+      font-size: 12px;
+      color: #777064;
+    }
+
+    @media(max-width: 600px) {
+      .rate-grid { grid-template-columns: 1fr; }
+      .country-grid { grid-template-columns: repeat(2, 1fr); }
+      .policy-card { padding: 22px; }
+      .container { padding-top: 42px; }
+    }
+  </style>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "@id": "https://commitmint.in/#organization",
+    "name": "Gombe",
+    "url": "https://commitmint.in/",
+    "hasShippingService": [
+      {
+        "@type": "ShippingService",
+        "name": "National Shipping - India",
+        "shippingConditions": [
+          {
+            "@type": "ShippingConditions",
+            "shippingDestination": {
+              "@type": "DefinedRegion",
+              "addressCountry": "IN"
+            },
+            "orderValue": {
+              "@type": "MonetaryAmount",
+              "currency": "INR",
+              "maxValue": 999.99
+            },
+            "shippingRate": {
+              "@type": "MonetaryAmount",
+              "currency": "INR",
+              "value": 150
+            }
+          },
+          {
+            "@type": "ShippingConditions",
+            "shippingDestination": {
+              "@type": "DefinedRegion",
+              "addressCountry": "IN"
+            },
+            "orderValue": {
+              "@type": "MonetaryAmount",
+              "currency": "INR",
+              "minValue": 1000
+            },
+            "shippingRate": {
+              "@type": "MonetaryAmount",
+              "currency": "INR",
+              "value": 0
+            }
+          }
+        ]
+      },
+      {
+        "@type": "ShippingService",
+        "name": "International Shipping",
+        "shippingConditions": [
+          {
+            "@type": "ShippingConditions",
+            "shippingDestination": [
+              {"@type": "DefinedRegion", "addressCountry": "US"},
+              {"@type": "DefinedRegion", "addressCountry": "AE"},
+              {"@type": "DefinedRegion", "addressCountry": "GB"},
+              {"@type": "DefinedRegion", "addressCountry": "CA"},
+              {"@type": "DefinedRegion", "addressCountry": "SA"},
+              {"@type": "DefinedRegion", "addressCountry": "DE"},
+              {"@type": "DefinedRegion", "addressCountry": "AU"},
+              {"@type": "DefinedRegion", "addressCountry": "NL"},
+              {"@type": "DefinedRegion", "addressCountry": "SG"},
+              {"@type": "DefinedRegion", "addressCountry": "FR"},
+              {"@type": "DefinedRegion", "addressCountry": "JP"},
+              {"@type": "DefinedRegion", "addressCountry": "MX"},
+              {"@type": "DefinedRegion", "addressCountry": "IT"},
+              {"@type": "DefinedRegion", "addressCountry": "ES"},
+              {"@type": "DefinedRegion", "addressCountry": "BE"},
+              {"@type": "DefinedRegion", "addressCountry": "PL"},
+              {"@type": "DefinedRegion", "addressCountry": "SE"},
+              {"@type": "DefinedRegion", "addressCountry": "IE"},
+              {"@type": "DefinedRegion", "addressCountry": "OM"},
+              {"@type": "DefinedRegion", "addressCountry": "KW"},
+              {"@type": "DefinedRegion", "addressCountry": "QA"},
+              {"@type": "DefinedRegion", "addressCountry": "BH"},
+              {"@type": "DefinedRegion", "addressCountry": "ZA"},
+              {"@type": "DefinedRegion", "addressCountry": "MY"},
+              {"@type": "DefinedRegion", "addressCountry": "NZ"},
+              {"@type": "DefinedRegion", "addressCountry": "KR"},
+              {"@type": "DefinedRegion", "addressCountry": "ID"},
+              {"@type": "DefinedRegion", "addressCountry": "TH"}
+            ],
+            "orderValue": {
+              "@type": "MonetaryAmount",
+              "currency": "INR",
+              "maxValue": 1999.99
+            },
+            "shippingRate": {
+              "@type": "MonetaryAmount",
+              "currency": "INR",
+              "value": 300
+            }
+          },
+          {
+            "@type": "ShippingConditions",
+            "shippingDestination": [
+              {"@type": "DefinedRegion", "addressCountry": "US"},
+              {"@type": "DefinedRegion", "addressCountry": "AE"},
+              {"@type": "DefinedRegion", "addressCountry": "GB"},
+              {"@type": "DefinedRegion", "addressCountry": "CA"},
+              {"@type": "DefinedRegion", "addressCountry": "SA"},
+              {"@type": "DefinedRegion", "addressCountry": "DE"},
+              {"@type": "DefinedRegion", "addressCountry": "AU"},
+              {"@type": "DefinedRegion", "addressCountry": "NL"},
+              {"@type": "DefinedRegion", "addressCountry": "SG"},
+              {"@type": "DefinedRegion", "addressCountry": "FR"},
+              {"@type": "DefinedRegion", "addressCountry": "JP"},
+              {"@type": "DefinedRegion", "addressCountry": "MX"},
+              {"@type": "DefinedRegion", "addressCountry": "IT"},
+              {"@type": "DefinedRegion", "addressCountry": "ES"},
+              {"@type": "DefinedRegion", "addressCountry": "BE"},
+              {"@type": "DefinedRegion", "addressCountry": "PL"},
+              {"@type": "DefinedRegion", "addressCountry": "SE"},
+              {"@type": "DefinedRegion", "addressCountry": "IE"},
+              {"@type": "DefinedRegion", "addressCountry": "OM"},
+              {"@type": "DefinedRegion", "addressCountry": "KW"},
+              {"@type": "DefinedRegion", "addressCountry": "QA"},
+              {"@type": "DefinedRegion", "addressCountry": "BH"},
+              {"@type": "DefinedRegion", "addressCountry": "ZA"},
+              {"@type": "DefinedRegion", "addressCountry": "MY"},
+              {"@type": "DefinedRegion", "addressCountry": "NZ"},
+              {"@type": "DefinedRegion", "addressCountry": "KR"},
+              {"@type": "DefinedRegion", "addressCountry": "ID"},
+              {"@type": "DefinedRegion", "addressCountry": "TH"}
+            ],
+            "orderValue": {
+              "@type": "MonetaryAmount",
+              "currency": "INR",
+              "minValue": 2000
+            },
+            "shippingRate": {
+              "@type": "MonetaryAmount",
+              "currency": "INR",
+              "value": 0
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+</head>
+
+<body>
+  <header class="topbar">
+    <a class="logo" href="/">GOMBE</a>
+    <a class="back-link" href="/">← Back to shopping</a>
+  </header>
+
+  <main class="container">
+    <p class="eyebrow">GOMBE · CUSTOMER INFORMATION</p>
+    <h1>Shipping & Returns</h1>
+    <p class="intro">
+      Every Gombe creation begins in Channapatna, India.
+      Here's how we deliver our handcrafted pieces to you
+      and how we help when an order arrives damaged or defective.
+    </p>
+
+    <section class="policy-card">
+      <h2>National Shipping</h2>
+      <p>For deliveries within India:</p>
+      <div class="rate-grid">
+        <div class="rate">
+          <span>Orders below ₹1,000</span>
+          <strong>₹150</strong>
+          <span>Standard shipping charge</span>
+        </div>
+        <div class="rate">
+          <span>Orders of ₹1,000 or more</span>
+          <strong class="free">FREE</strong>
+          <span>Free national shipping</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="policy-card">
+      <h2>International Shipping</h2>
+      <p>We currently deliver to the following selected countries:</p>
+      <ul class="country-grid">
+        <li>United States</li>
+        <li>United Arab Emirates</li>
+        <li>United Kingdom</li>
+        <li>Canada</li>
+        <li>Saudi Arabia</li>
+        <li>Germany</li>
+        <li>Australia</li>
+        <li>Netherlands</li>
+        <li>Singapore</li>
+        <li>France</li>
+        <li>Japan</li>
+        <li>Mexico</li>
+        <li>Italy</li>
+        <li>Spain</li>
+        <li>Belgium</li>
+        <li>Poland</li>
+        <li>Sweden</li>
+        <li>Ireland</li>
+        <li>Oman</li>
+        <li>Kuwait</li>
+        <li>Qatar</li>
+        <li>Bahrain</li>
+        <li>South Africa</li>
+        <li>Malaysia</li>
+        <li>New Zealand</li>
+        <li>South Korea</li>
+        <li>Indonesia</li>
+        <li>Thailand</li>
+      </ul>
+
+      <div class="rate-grid">
+        <div class="rate">
+          <span>Orders below ₹2,000</span>
+          <strong>₹300</strong>
+          <span>International shipping charge</span>
+        </div>
+        <div class="rate">
+          <span>Orders of ₹2,000 or more</span>
+          <strong class="free">FREE</strong>
+          <span>Free international shipping</span>
+        </div>
+      </div>
+      <p class="note">
+        International delivery is available only to the countries listed above.
+      </p>
+    </section>
+
+    <section class="policy-card">
+      <h2>Returns & Replacements</h2>
+      <p>
+        We want every Gombe creation to reach you in good condition.
+        If your product arrives damaged or defective, please contact
+        Gombe within 7 days from the date of delivery.
+      </p>
+      <ul>
+        <li>Returns and replacements are limited to damaged or defective products.</li>
+        <li>Gombe arranges pickup for eligible products.</li>
+        <li>There is no return pickup charge for eligible damaged or defective products.</li>
+      </ul>
+      <p class="note">
+        This policy does not provide general returns for change of mind.
+      </p>
+    </section>
+
+    <section class="policy-card">
+      <h2>Need Help?</h2>
+      <p>
+        If you have questions about shipping, delivery or a damaged
+        product, please contact the Gombe team through our website.
+      </p>
+      <a href="/#faq">Visit Gombe's contact section →</a>
+    </section>
+  </main>
+
+  <footer>
+    © 2026 GOMBE · Hand-turned stories from Channapatna, India.
+  </footer>
+</body>
+</html>

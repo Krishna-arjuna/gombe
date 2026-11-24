@@ -1028,6 +1028,11 @@ app.post('/api/custom-requests', async (req, res) => {
 
 app.get('/admin', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
 
+app.get('/shipping-policy', (_req, res) => {
+  res.sendFile(
+    path.join(__dirname, 'public', 'shipping-policy.html')
+  );
+});
 
 // SEO-friendly product pages
 app.get('/products/:slug', async (req, res) => {
