@@ -115,6 +115,7 @@ const art = {
 function money(value) {
   return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(Number(value));
 }
+
 function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>"']/g, (character) => ({
     '&': '&amp;',
@@ -124,6 +125,7 @@ function escapeHtml(value) {
     "'": '&#39;'
   })[character]);
 }
+
 function safeProductImageUrl(value) {
   try {
     if (/^\/(?:uploads\/[a-f0-9]{32}\.(?:jpg|png|webp)|api\/product-images\/[a-f0-9]{24})$/i.test(value)) return value;
@@ -133,6 +135,7 @@ function safeProductImageUrl(value) {
     return '';
   }
 }
+
 function selectedProducts() {
   const style = document.querySelector('#styleFilter').value;
   const age = document.querySelector('#ageFilter').value;
@@ -155,7 +158,8 @@ function selectedProducts() {
 function productCard(product) {
   const isSaved = wishlist.has(product.slug);
   const imageUrl = safeProductImageUrl(product.imageUrl) || safeProductImageUrl(product.images?.[0]);
-  const available = product.inStock !== false;
+  const available = product.inStock !== false;const hasRating = Number(product.rating) > 0;
+
   return `<article class="product-card">
     <div class="product-visual product-image-slot">
       <span class="product-image-placeholder" aria-hidden="true">Product photo</span>
@@ -164,7 +168,12 @@ function productCard(product) {
       <button class="card-heart ${isSaved ? 'saved' : ''}" data-save="${escapeHtml(product.slug)}" aria-label="${isSaved ? 'Remove from' : 'Save to'} wishlist">${isSaved ? '♥' : '♡'}</button>
       <button class="quick-add" data-add="${escapeHtml(product.slug)}" ${available ? '' : 'disabled'}>${available ? 'Add to bag <span>+</span>' : 'Sold out'}</button>
     </div>
-    <div class="product-details"><a class="product-name product-detail-trigger" href="/products/${encodeURIComponent(product.slug)}" data-detail="${escapeHtml(product.slug)}">${escapeHtml(product.name)}</a><span class="product-price">${money(product.price)}</span><span class="product-variant">${escapeHtml(product.variant)}</span><span class="product-rating" aria-label="${Number(product.rating || 5).toFixed(1)} out of 5 stars">${Number(product.rating || 5).toFixed(1)} ★ <small>(${Number(product.reviews || 0)})</small></span></div>
+    <div class="product-details">
+      <a class="product-name product-detail-trigger" href="/products/${encodeURIComponent(product.slug)}" data-detail="${escapeHtml(product.slug)}">${escapeHtml(product.name)}</a>
+      <span class="product-price">${money(product.price)}</span>
+      <span class="product-variant">${escapeHtml(product.variant)}</span>
+      <span class="product-rating" aria-label="${Number(product.rating || 5).toFixed(1)} out of 5 stars">${Number(product.rating || 5).toFixed(1)} ★ <small>(${Number(product.reviews || 0)})</small></span>
+    </div>
   </article>`;
 }
 
@@ -172,7 +181,7 @@ function productThumbnail(product) {
   const imageUrl = safeProductImageUrl(product.imageUrl) || safeProductImageUrl(product.images?.[0]);
   const illustration = art[product.imageClass] || `<span class="drawer-photo-fallback">GOMBE</span>`;
   const image = imageUrl
-    ? `<img class="drawer-product-photo" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(product.name)}" loading="eager">`
+    ? `<img class="drawer-product-photo" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(`${product.name} - handcrafted Channapatna wooden toy by Gombe`)}" loading="eager">`
     : '';
   return `<div class="drawer-item-art ${escapeHtml(product.imageClass || '')}">${illustration}${image}</div>`;
 }
@@ -227,12 +236,19 @@ function renderHighlights(mode = 'featured') {
   grid.innerHTML = highlights.map(productCard).join('');
 }
 
-function getProduct(slug) { return products.find((product) => product.slug === slug); }
-function cartQuantity() { return cart.reduce((sum, item) => sum + item.quantity, 0); }
+function getProduct(slug) {
+  return products.find((product) => product.slug === slug);
+}
+
+function cartQuantity() {
+  return cart.reduce((sum, item) => sum + item.quantity, 0);
+}
+
 function updateCounts() {
   document.querySelectorAll('.bag-count').forEach((node) => { node.textContent = cartQuantity(); });
   document.querySelectorAll('.wishlist-count').forEach((node) => { node.textContent = wishlist.size; });
 }
+
 function syncCustomerState(data, mergeGuest = false) {
   const guestCart = mergeGuest ? cart : [];
   const guestWishlist = mergeGuest ? [...wishlist] : [];
@@ -250,6 +266,7 @@ function syncCustomerState(data, mergeGuest = false) {
   renderProducts();
   updateCustomerInterface();
 }
+
 function updateCustomerInterface() {
   const accountLabel = document.querySelector('.account-trigger .action-label');
   const accountButton = document.querySelector('.account-trigger');
@@ -270,10 +287,12 @@ function updateCustomerInterface() {
   }
   document.dispatchEvent(new CustomEvent('gombe:customer-state'));
 }
+
 function closeAccountMenu() {
   document.querySelector('#accountMenu').hidden = true;
   document.querySelector('.account-trigger').setAttribute('aria-expanded', 'false');
 }
+
 function persistAccountState() {
   if (!customer) return;
   const snapshot = {
@@ -291,6 +310,7 @@ function persistAccountState() {
   });
   accountSaveQueue.catch((error) => showToast(error.message));
 }
+
 async function loadCustomerSession() {
   try {
     const response = await fetch('/api/auth/session');
@@ -303,6 +323,7 @@ async function loadCustomerSession() {
     showToast(error.message);
   }
 }
+
 function showToast(message) {
   const toast = document.querySelector('#toast');
   toast.textContent = message;
@@ -335,12 +356,14 @@ function addToCart(slug) {
   showToast(`${product.name} is in your bag.`);
   return true;
 }
+
 function removeFromCart(slug) {
   cart = cart.filter((item) => item.slug !== slug);
   updateCounts();
   renderCart();
   persistAccountState();
 }
+
 function updateCartQuantity(slug, change) {
   const item = cart.find((entry) => entry.slug === slug);
   if (!item) return;
@@ -351,8 +374,24 @@ function updateCartQuantity(slug, change) {
   renderCart();
   persistAccountState();
 }
+
 function renderCart() {
-  cartItems.innerHTML = cart.map((item) => `<div class="drawer-item">${productThumbnail(item)}<div class="drawer-item-info"><h3>${escapeHtml(item.name)}</h3><p>${escapeHtml(item.variant)}</p><strong>${money(item.price * item.quantity)}</strong><div class="bag-quantity" aria-label="${escapeHtml(item.name)} quantity"><button type="button" data-cart-change="-1" data-cart-quantity="${escapeHtml(item.slug)}" aria-label="Decrease ${escapeHtml(item.name)} quantity" ${item.quantity <= 1 ? 'disabled' : ''}>−</button><span>Qty ${item.quantity}</span><button type="button" data-cart-change="1" data-cart-quantity="${escapeHtml(item.slug)}" aria-label="Increase ${escapeHtml(item.name)} quantity" ${item.quantity >= 99 ? 'disabled' : ''}>+</button></div></div><button class="remove-item" data-remove-cart="${escapeHtml(item.slug)}" aria-label="Remove ${escapeHtml(item.name)}">×</button></div>`).join('');
+  cartItems.innerHTML = cart.map((item) => `
+    <div class="drawer-item">
+      ${productThumbnail(item)}
+      <div class="drawer-item-info">
+        <h3>${escapeHtml(item.name)}</h3>
+        <p>${escapeHtml(item.variant)}</p>
+        <strong>${money(item.price * item.quantity)}</strong>
+        <div class="bag-quantity" aria-label="${escapeHtml(item.name)} quantity">
+          <button type="button" data-cart-change="-1" data-cart-quantity="${escapeHtml(item.slug)}" aria-label="Decrease ${escapeHtml(item.name)} quantity" ${item.quantity <= 1 ? 'disabled' : ''}>−</button>
+          <span>Qty ${item.quantity}</span>
+          <button type="button" data-cart-change="1" data-cart-quantity="${escapeHtml(item.slug)}" aria-label="Increase ${escapeHtml(item.name)} quantity" ${item.quantity >= 99 ? 'disabled' : ''}>+</button>
+        </div>
+      </div>
+      <button class="remove-item" data-remove-cart="${escapeHtml(item.slug)}" aria-label="Remove ${escapeHtml(item.name)}">×</button>
+    </div>
+  `).join('');
   watchDrawerPhotos(cartItems);
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   document.querySelector('#cartSubtotal').textContent = money(subtotal);
@@ -360,9 +399,20 @@ function renderCart() {
   cartEmpty.classList.toggle('visible', cart.length === 0);
   document.querySelector('.cart-summary').style.display = cart.length ? 'block' : 'none';
 }
+
 function renderWishlist() {
   const saved = [...wishlist].map(getProduct).filter(Boolean);
-  wishlistItems.innerHTML = saved.map((item) => `<div class="drawer-item">${productThumbnail(item)}<div class="drawer-item-info"><h3>${escapeHtml(item.name)}</h3><p>${escapeHtml(item.variant)} · ${money(item.price)}</p><button class="add-from-wish" data-add="${escapeHtml(item.slug)}">Add to bag</button></div><button class="remove-item" data-remove-wish="${escapeHtml(item.slug)}" aria-label="Remove ${escapeHtml(item.name)}">×</button></div>`).join('');
+  wishlistItems.innerHTML = saved.map((item) => `
+    <div class="drawer-item">
+      ${productThumbnail(item)}
+      <div class="drawer-item-info">
+        <h3>${escapeHtml(item.name)}</h3>
+        <p>${escapeHtml(item.variant)} · ${money(item.price)}</p>
+        <button class="add-from-wish" data-add="${escapeHtml(item.slug)}">Add to bag</button>
+      </div>
+      <button class="remove-item" data-remove-wish="${escapeHtml(item.slug)}" aria-label="Remove ${escapeHtml(item.name)}">×</button>
+    </div>
+  `).join('');
   watchDrawerPhotos(wishlistItems);
   wishlistEmpty.classList.toggle('visible', saved.length === 0);
 }
@@ -392,8 +442,12 @@ function openDrawer(drawer) {
   overlay.classList.add('visible');
   drawer.setAttribute('aria-hidden', 'false');
 }
+
 function closeDrawers() {
-  document.querySelectorAll('.cart-drawer,.wishlist-drawer').forEach((element) => { element.classList.remove('open'); element.setAttribute('aria-hidden', 'true'); });
+  document.querySelectorAll('.cart-drawer,.wishlist-drawer').forEach((element) => {
+    element.classList.remove('open');
+    element.setAttribute('aria-hidden', 'true');
+  });
   overlay.classList.remove('visible');
 }
 
@@ -403,12 +457,14 @@ productGrid.addEventListener('click', (event) => {
   if (addButton) addToCart(addButton.dataset.add);
   if (saveButton) toggleWishlist(saveButton.dataset.save);
 });
+
 cartItems.addEventListener('click', (event) => {
   const quantityButton = event.target.closest('[data-cart-change]');
   const removeButton = event.target.closest('[data-remove-cart]');
   if (quantityButton) updateCartQuantity(quantityButton.dataset.cartQuantity, Number(quantityButton.dataset.cartChange));
   if (removeButton) removeFromCart(removeButton.dataset.removeCart);
 });
+
 wishlistItems.addEventListener('click', (event) => {
   const remove = event.target.closest('[data-remove-wish]');
   const add = event.target.closest('[data-add]');
@@ -448,7 +504,10 @@ document.querySelectorAll('[data-highlight]').forEach((tab) => tab.addEventListe
   });
   renderHighlights(tab.dataset.highlight);
 }));
-loadMore.addEventListener('click', () => { visibleCount += 4; renderProducts(); });
+loadMore.addEventListener('click', () => {
+  visibleCount += 4;
+  renderProducts();
+});
 document.querySelector('.filter-toggle').addEventListener('click', () => filterBar.classList.toggle('open'));
 document.querySelector('.bag-trigger').addEventListener('click', () => openDrawer(cartDrawer));
 document.querySelector('.wishlist-trigger').addEventListener('click', () => openDrawer(wishlistDrawer));
@@ -462,16 +521,22 @@ document.querySelector('.checkout-button').addEventListener('click', () => {
 
 const customModal = document.querySelector('#customModal');
 const authModal = document.querySelector('#authModal');
+
 function requestAuthentication(action) {
   pendingAccountAction = action;
   document.querySelector('#authMessage').textContent = 'Sign in or create an account to save pieces and add them to your bag.';
   if (!authModal.open) authModal.showModal();
 }
-authModal.addEventListener('close', () => { pendingAccountAction = null; });
+
+authModal.addEventListener('close', () => {
+  pendingAccountAction = null;
+});
+
 function openCustomModal() {
   document.querySelector('#mobileMenu').classList.remove('open');
   customModal.showModal();
 }
+
 document.querySelectorAll('.custom-trigger').forEach((button) => button.addEventListener('click', openCustomModal));
 document.querySelector('.account-trigger').addEventListener('click', () => {
   pendingAccountAction = null;
@@ -527,7 +592,11 @@ document.querySelector('#customForm').addEventListener('submit', async (event) =
   delete payload.referenceImage;
   payload.imageName = file instanceof File ? file.name : '';
   try {
-    const response = await fetch('/api/custom-requests', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    const response = await fetch('/api/custom-requests', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
     if (!response.ok) throw new Error('Unable to submit');
     customModal.close();
     event.currentTarget.reset();
@@ -551,6 +620,7 @@ document.querySelectorAll('[data-auth-tab]').forEach((tab) => tab.addEventListen
   document.querySelector('#authMessage').textContent = '';
   document.querySelector('#authForm .button').innerHTML = `${isSignup ? 'Create account' : 'Sign in'} <span>→</span>`;
 }));
+
 document.querySelector('#authForm').addEventListener('submit', async (event) => {
   event.preventDefault();
   const form = event.currentTarget;
@@ -584,6 +654,7 @@ document.querySelector('#authForm').addEventListener('submit', async (event) => 
     submitButton.disabled = false;
   }
 });
+
 document.querySelector('#customerLogout').addEventListener('click', async () => {
   const button = document.querySelector('#customerLogout');
   button.disabled = true;
@@ -609,6 +680,7 @@ document.querySelector('#customerLogout').addEventListener('click', async () => 
     button.disabled = false;
   }
 });
+
 document.querySelector('#newsletterForm').addEventListener('submit', async (event) => {
   event.preventDefault();
   const form = event.currentTarget;
