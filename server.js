@@ -1158,9 +1158,15 @@ itemDefectReturnFees: 'https://schema.org/FreeReturn',
     );
 
     // Replace generic homepage metadata with product-specific metadata
-    const cleanedHtml = html
-      .replace(/<title>[\s\S]*?<\/title>/i, '')
-      .replace(/<meta\s+name=["']description["'][^>]*>/i, '');
+    
+// Replace generic homepage metadata with product-specific metadata
+const cleanedHtml = html
+  .replace(/<title>[\s\S]*?<\/title>/i, '')
+  .replace(/<meta\s+name=["']description["'][^>]*>/i, '')
+  .replace(/<link\s+rel=["']canonical["'][^>]*>/i, '')
+  .replace(/<meta\s+property=["']og:[^"']+["'][^>]*>/gi, '')
+  .replace(/<meta\s+name=["']twitter:[^"']+["'][^>]*>/gi, '');
+
 
     const updatedHtml = cleanedHtml.replace(
         /<head([^>]*)>/i,
