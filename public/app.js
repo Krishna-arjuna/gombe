@@ -158,7 +158,10 @@ function selectedProducts() {
 function productCard(product) {
   const isSaved = wishlist.has(product.slug);
   const imageUrl = safeProductImageUrl(product.imageUrl) || safeProductImageUrl(product.images?.[0]);
-  const available = product.inStock !== false;const hasRating = Number(product.rating) > 0;
+  const available = product.inStock !== false;
+  
+
+  const hasRating = Number(product.rating) > 0;
 
   return `<article class="product-card">
     <div class="product-visual product-image-slot">
@@ -172,7 +175,7 @@ function productCard(product) {
       <a class="product-name product-detail-trigger" href="/products/${encodeURIComponent(product.slug)}" data-detail="${escapeHtml(product.slug)}">${escapeHtml(product.name)}</a>
       <span class="product-price">${money(product.price)}</span>
       <span class="product-variant">${escapeHtml(product.variant)}</span>
-      <span class="product-rating" aria-label="${Number(product.rating || 5).toFixed(1)} out of 5 stars">${Number(product.rating || 5).toFixed(1)} ★ <small>(${Number(product.reviews || 0)})</small></span>
+      ${hasRating ? `<span class="product-rating" aria-label="${Number(product.rating).toFixed(1)} out of 5 stars">${Number(product.rating).toFixed(1)} ★ <small>(${Number(product.reviews || 0)})</small></span>` : ''}
     </div>
   </article>`;
 }
