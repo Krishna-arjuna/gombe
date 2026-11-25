@@ -1108,6 +1108,9 @@ app.get('/products/:slug', async (req, res) => {
   merchantReturnDays: 7,
   returnMethod:
     'https://schema.org/ReturnByMail',
+  merchantReturnDays: 7,
+returnMethod: 'https://schema.org/ReturnByMail',
+itemDefectReturnFees: 'https://schema.org/FreeReturn',
   itemDefectReturnFees:
     'https://schema.org/FreeReturn'
 }
