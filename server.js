@@ -1078,6 +1078,30 @@ app.get('/products/:slug', async (req, res) => {
       ? `https://commitmint.in${imagePath}`
       : imagePath;
 
+    const formattedPrice = new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0
+    }).format(Number(product.price));
+
+    const productVisual = imageUrl
+      ? `<img class="product-dialog-photo" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(product.name)}" fetchpriority="high" />`
+      : '<div class="product-gallery-placeholder">Product photo</div>';
+
+    const productCopy = `
+      <p class="eyebrow">${escapeHtml(product.style)} · ${escapeHtml(product.ageGroup)}</p>
+      <h1 id="productPageTitle">${escapeHtml(product.name)}</h1>
+      <p class="product-dialog-price">${escapeHtml(formattedPrice)}</p>
+      <p class="product-dialog-description">${escapeHtml(description)}</p>
+      <dl class="product-facts">
+        <div><dt>Recommended age</dt><dd>${escapeHtml(product.ageGroup)}</dd></div>
+        <div><dt>Style</dt><dd>${escapeHtml(product.style)}</dd></div>
+        <div><dt>Materials</dt><dd>${escapeHtml(product.materials || 'Contact our team for product-specific details')}</dd></div>
+        <div><dt>Dimensions</dt><dd>${escapeHtml(product.dimensions || 'Contact our team for exact dimensions')}</dd></div>
+        <div><dt>Care</dt><dd>${escapeHtml(product.care || 'Wipe gently with a soft, dry cloth; keep away from prolonged moisture.')}</dd></div>
+        <div><dt>Availability</dt><dd>${product.inStock === false ? 'Currently sold out' : 'Available to order'}</dd></div>
+      </dl>`;
+
     const structuredProduct = {
       '@context': 'https://schema.org',
       '@type': 'Product',
@@ -1143,6 +1167,7 @@ app.get('/products/:slug', async (req, res) => {
       <meta name="twitter:description" content="${escapeHtml(description)}" />
       ${imageUrl ? `<meta name="twitter:image" content="${escapeHtml(imageUrl)}" /><meta name="twitter:image:alt" content="${escapeHtml(product.name)}" />` : ''}
 
+      <style>body.product-page-mode #top > section:not(#productPage) { display: none; }</style>
       <script type="application/ld+json">${jsonLd}</script>
     `;
 
@@ -1158,7 +1183,33 @@ app.get('/products/:slug', async (req, res) => {
       .replace(/<meta\s+property=["']og:[^"']+["'][^>]*>/gi, '')
       .replace(/<meta\s+name=["']twitter:[^"']+["'][^>]*>/gi, '');
 
-    const updatedHtml = cleanedHtml.replace(
+      const productPagePlaceholders = [
+        '<body>',
+        '<section class="product-page" id="productPage" hidden aria-labelledby="productPageTitle">',
+        '<div class="product-dialog-visual" id="productDialogVisual"></div>',
+        '<div class="product-dialog-copy" id="productDialogCopy"></div>'
+      ];
+
+      if (!productPagePlaceholders.every((placeholder) => cleanedHtml.includes(placeholder))) {
+        throw new Error('Product page template is missing expected server-rendered content placeholders.');
+      }
+
+      const renderedProductHtml = cleanedHtml
+        .replace('<body>', '<body class="product-page-mode">')
+        .replace(
+          '<section class="product-page" id="productPage" hidden aria-labelledby="productPageTitle">',
+          '<section class="product-page" id="productPage" aria-labelledby="productPageTitle">'
+        )
+        .replace(
+          '<div class="product-dialog-visual" id="productDialogVisual"></div>',
+          `<div class="product-dialog-visual" id="productDialogVisual">${productVisual}</div>`
+        )
+        .replace(
+          '<div class="product-dialog-copy" id="productDialogCopy"></div>',
+          `<div class="product-dialog-copy" id="productDialogCopy">${productCopy}</div>`
+        );
+
+      const updatedHtml = renderedProductHtml.replace(
         /<head([^>]*)>/i,
         (match) => `${match}\n${seoTags}`
       );
