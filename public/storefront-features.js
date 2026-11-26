@@ -84,7 +84,7 @@
   function restoreCollection(updateUrl = true) {
     document.body.classList.remove('product-page-mode');
     productPage.hidden = true;
-    document.title = 'Gombe — Channapatna, for every story';
+    document.title = 'Channapatna Wooden Toys & Handcrafted Gifts | Gombe';
     if (updateUrl && (window.location.pathname.startsWith('/products/') || new URLSearchParams(window.location.search).has('piece'))) {
       history.pushState({}, '', '/#collection');
     }
@@ -174,7 +174,7 @@
     await store.catalogReady;
     const product = store.findProduct(slug);
     if (!product) return;
-    document.title = `${product.name} | Gombe`;
+    document.title = `${product.name} | Channapatna Wooden Craft | Gombe`;
     currentProductSlug = slug;
     const visual = document.querySelector('#productDialogVisual');
     visual.replaceChildren();
