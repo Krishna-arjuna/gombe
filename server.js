@@ -1063,10 +1063,10 @@ app.get('/products/:slug', async (req, res) => {
         "'": '&#39;'
       })[char]);
 
-    const title = `${product.name} | Handcrafted Channapatna Wooden Craft | Gombe`;
+    const title = `${product.name} | Channapatna Wooden Craft | Gombe`;
 
     const description = product.description?.trim()
-      || `${product.name} by Gombe. Discover handcrafted Channapatna wooden toys and traditional craft.`;
+      || `${product.name} by Gombe: a handcrafted ${product.variant || 'wooden piece'} from Channapatna, India. Explore traditional wooden toys and thoughtful gifts.`;
 
     const canonicalUrl =
       `https://commitmint.in/products/${encodeURIComponent(product.slug)}`;
@@ -1091,30 +1091,20 @@ app.get('/products/:slug', async (req, res) => {
       category: product.productCollection || 'Handcrafted wooden products',
       ...(imageUrl ? { image: [imageUrl] } : {}),
       offers: {
-  '@type': 'Offer',
-  url: canonicalUrl,
-  priceCurrency: 'INR',
-  price: String(product.price),
-  availability: product.inStock === false
-    ? 'https://schema.org/OutOfStock'
-    : 'https://schema.org/InStock',
-  itemCondition: 'https://schema.org/NewCondition',
-
-  hasMerchantReturnPolicy: {
-  '@type': 'MerchantReturnPolicy',
-  applicableCountry: 'IN',
-  returnPolicyCategory:
-    'https://schema.org/MerchantReturnFiniteReturnWindow',
-  merchantReturnDays: 7,
-  returnMethod:
-    'https://schema.org/ReturnByMail',
-  merchantReturnDays: 7,
-returnMethod: 'https://schema.org/ReturnByMail',
-itemDefectReturnFees: 'https://schema.org/FreeReturn',
-  itemDefectReturnFees:
-    'https://schema.org/FreeReturn'
-}
-}
+        '@type': 'Offer',
+        url: canonicalUrl,
+        priceCurrency: 'INR',
+        price: String(product.price),
+        availability: product.inStock === false
+          ? 'https://schema.org/OutOfStock'
+          : 'https://schema.org/InStock',
+        itemCondition: 'https://schema.org/NewCondition',
+        seller: {
+          '@type': 'Organization',
+          name: 'Gombe',
+          url: 'https://commitmint.in/'
+        }
+      }
     };
 
     if (product.rating > 0 && product.reviews > 0) {
@@ -1142,12 +1132,16 @@ itemDefectReturnFees: 'https://schema.org/FreeReturn',
       <meta property="og:title" content="${escapeHtml(title)}" />
       <meta property="og:description" content="${escapeHtml(description)}" />
       <meta property="og:url" content="${escapeHtml(canonicalUrl)}" />
-      ${imageUrl ? `<meta property="og:image" content="${escapeHtml(imageUrl)}" />` : ''}
+      <meta property="og:site_name" content="Gombe" />
+      ${imageUrl ? `<meta property="og:image" content="${escapeHtml(imageUrl)}" /><meta property="og:image:alt" content="${escapeHtml(product.name)}" />` : ''}
+      <meta property="product:price:amount" content="${escapeHtml(product.price)}" />
+      <meta property="product:price:currency" content="INR" />
+      <meta property="product:availability" content="${product.inStock === false ? 'out of stock' : 'in stock'}" />
 
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content="${escapeHtml(title)}" />
       <meta name="twitter:description" content="${escapeHtml(description)}" />
-      ${imageUrl ? `<meta name="twitter:image" content="${escapeHtml(imageUrl)}" />` : ''}
+      ${imageUrl ? `<meta name="twitter:image" content="${escapeHtml(imageUrl)}" /><meta name="twitter:image:alt" content="${escapeHtml(product.name)}" />` : ''}
 
       <script type="application/ld+json">${jsonLd}</script>
     `;
@@ -1157,16 +1151,12 @@ itemDefectReturnFees: 'https://schema.org/FreeReturn',
       'utf8'
     );
 
-    // Replace generic homepage metadata with product-specific metadata
-    
-// Replace generic homepage metadata with product-specific metadata
-const cleanedHtml = html
-  .replace(/<title>[\s\S]*?<\/title>/i, '')
-  .replace(/<meta\s+name=["']description["'][^>]*>/i, '')
-  .replace(/<link\s+rel=["']canonical["'][^>]*>/i, '')
-  .replace(/<meta\s+property=["']og:[^"']+["'][^>]*>/gi, '')
-  .replace(/<meta\s+name=["']twitter:[^"']+["'][^>]*>/gi, '');
-
+    const cleanedHtml = html
+      .replace(/<title>[\s\S]*?<\/title>/i, '')
+      .replace(/<meta\s+name=["']description["'][^>]*>/i, '')
+      .replace(/<link\s+rel=["']canonical["'][^>]*>/i, '')
+      .replace(/<meta\s+property=["']og:[^"']+["'][^>]*>/gi, '')
+      .replace(/<meta\s+name=["']twitter:[^"']+["'][^>]*>/gi, '');
 
     const updatedHtml = cleanedHtml.replace(
         /<head([^>]*)>/i,
