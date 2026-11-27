@@ -236,7 +236,7 @@
         photo.classList.remove('image-unavailable');
         photo.src = gallery[galleryIndex];
         magnifiedPhoto.src = gallery[galleryIndex];
-        photo.alt = `${product.name}, image ${galleryIndex + 1} of ${gallery.length}`;
+        photo.alt = `${product.name} - ${product.variant || product.productCollection || 'Handcrafted product'} by Gombe, photo ${galleryIndex + 1}`;
         magnifierPinned = false;
         setMagnifierVisible(false);
         galleryLayout.querySelectorAll('.product-gallery-thumb').forEach((thumbnail, index) => {
