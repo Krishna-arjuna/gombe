@@ -1,3 +1,32 @@
+// GA4 ecommerce tracking helpers
+function trackGa4(eventName, payload) {
+  if (typeof window.gtag === 'function') {
+    window.gtag('event', eventName, payload);
+  }
+}
+
+function ga4Items(items) {
+  return (items || []).map((item) => ({
+    item_id: item.slug || item.id || '',
+    item_name: item.name || 'Gombe product',
+    item_category: item.productCollection || item.collection || '',
+    item_variant: item.variant || '',
+    price: Number(item.price) || 0,
+    quantity: Math.max(1, Number(item.quantity) || 1)
+  }));
+}
+
+function trackPurchase(order) {
+  if (!order || !order.trackingCode) return;
+
+  trackGa4('purchase', {
+    transaction_id: String(order.trackingCode),
+    value: Number(order.total) || 0,
+    currency: 'INR',
+    items: ga4Items(order.items)
+  });
+}
+
 (() => {
   const store = window.GombeStorefront;
   const formatMoney = store.money;
@@ -176,6 +205,11 @@
     if (!product) return;
     document.title = `${product.name} | Channapatna Wooden Craft | Gombe`;
     currentProductSlug = slug;
+    trackGa4('view_item', {
+  currency: 'INR',
+  value: Number(product.price) || 0,
+  items: ga4Items([{ ...product, quantity: 1 }])
+});
     const visual = document.querySelector('#productDialogVisual');
     visual.replaceChildren();
     const gallery = [...new Set([product.imageUrl, ...(Array.isArray(product.images) ? product.images : [])]
@@ -455,7 +489,20 @@
     const addButton = event.target.closest('[data-add-detail]');
     if (addButton && !addButton.disabled) {
       const added = store.addToCart(addButton.dataset.addDetail);
-      if (added) document.querySelector('.bag-trigger').click();
+
+if (added) {
+  const product = store.findProduct(addButton.dataset.addDetail);
+
+  if (product) {
+    trackGa4('add_to_cart', {
+      currency: 'INR',
+      value: Number(product.price) || 0,
+      items: ga4Items([{ ...product, quantity: 1 }])
+    });
+  }
+
+  document.querySelector('.bag-trigger').click();
+}
     }
     if (event.target.closest('.product-back-link')) {
       event.preventDefault();
@@ -522,6 +569,7 @@
         })
       });
       if (paymentMethod === 'cod') {
+        trackPurchase(data.order);
         showOrderConfirmation(data.order);
         return;
       }
@@ -547,6 +595,7 @@
                 razorpaySignature: response.razorpay_signature
               })
             });
+            trackPurchase(verified.order);
             showOrderConfirmation(verified.order);
           } catch (error) {
             showOrderConfirmation(data.order, true);
@@ -706,6 +755,15 @@
   requestJson('/api/checkout/config').then((data) => {
     checkoutConfig = data;
     syncPaymentChoices();
+    trackGa4('begin_checkout', {
+  currency: 'INR',
+  value: store.getCart().reduce(
+    (total, item) =>
+      total + (Number(item.price) || 0) * (Number(item.quantity) || 1),
+    0
+  ),
+  items: ga4Items(store.getCart())
+});
   }).catch((error) => {
     document.querySelector('#onlinePaymentNotice').textContent = error.message;
   });
