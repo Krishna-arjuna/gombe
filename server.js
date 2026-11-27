@@ -1148,7 +1148,12 @@ app.get('/collections/:slug', async (req, res) => {
       }
 
       const image = imageUrl
-        ? `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(product.name)}" loading="lazy">`
+        ? `<img
+          src="${escapeHtml(imageUrl)}"
+          alt="${escapeHtml(`${product.name} - ${collectionPage.heading} | Gombe`)}"
+          loading="lazy"
+          decoding="async"
+        >`
         : '<span class="collection-product-image-placeholder">Handcrafted in Channapatna</span>';
 
       const formattedPrice = new Intl.NumberFormat('en-IN', {
@@ -1269,9 +1274,17 @@ app.get('/products/:slug', async (req, res) => {
       maximumFractionDigits: 0
     }).format(Number(product.price));
 
-    const productVisual = imageUrl
-      ? `<img class="product-dialog-photo" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(product.name)}" fetchpriority="high" />`
-      : '<div class="product-gallery-placeholder">Product photo</div>';
+    const imageAlt = `${product.name} - ${product.variant || product.productCollection || 'Handcrafted wooden product'} by Gombe`;
+
+const productVisual = imageUrl
+  ? `<img
+      class="product-dialog-photo"
+      src="${escapeHtml(imageUrl)}"
+      alt="${escapeHtml(imageAlt)}"
+      fetchpriority="high"
+      decoding="async"
+    />`
+  : '<div class="product-gallery-placeholder">Product photo</div>';
 
     const productCopy = `
       <p class="eyebrow">${escapeHtml(product.style)} · ${escapeHtml(product.ageGroup)}</p>
