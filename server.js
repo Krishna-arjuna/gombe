@@ -19,6 +19,71 @@ const customerSessionDuration = 30 * 24 * 60 * 60;
 const loginAttempts = new Map();
 const customerAuthAttempts = new Map();
 const productCollections = ['Children toys', 'Home decor and lifestyle', 'Education toys', 'Infant and toddler', 'Our gift choice', 'The GenZ', 'Handicrafts'];
+const collectionPages = [
+  {
+    slug: 'children-toys',
+    collection: 'Children toys',
+    title: 'Channapatna Wooden Toys for Children | Gombe',
+    description: 'Explore handcrafted Channapatna wooden toys for children by Gombe. Discover colourful, hand-turned toys and playful gifts made in India.',
+    heading: 'Channapatna wooden toys for children',
+    intro: 'Discover handcrafted wooden toys shaped by the traditional turning craft of Channapatna, India. Explore playful characters and keepsakes made by artisans, with product details to help you choose a piece for your family.',
+    guidance: 'Check the recommended age and product-specific details on each item before ordering. Young children should always be supervised during play.'
+  },
+  {
+    slug: 'educational-toys',
+    collection: 'Education toys',
+    title: 'Wooden Educational Toys | Gombe',
+    description: 'Browse Gombe’s handcrafted wooden educational toys from Channapatna, India. Find playful wooden pieces for curious minds and thoughtful gifting.',
+    heading: 'Wooden educational toys',
+    intro: 'Make room for curiosity with handcrafted wooden toys from Gombe. This collection brings together pieces selected for playful discovery, thoughtful design and the enduring craft of Channapatna artisans.',
+    guidance: 'Read each product’s age guidance and description to understand its intended use before choosing.'
+  },
+  {
+    slug: 'wooden-home-decor',
+    collection: 'Home decor and lifestyle',
+    title: 'Handcrafted Wooden Home Decor | Gombe',
+    description: 'Shop handcrafted wooden home decor by Gombe. Discover Channapatna turned vases, candle holders and useful wooden accents made by Indian artisans.',
+    heading: 'Handcrafted wooden home decor',
+    intro: 'Bring the warmth of turned wood and Channapatna craftsmanship into your home. Explore handcrafted decor and lifestyle pieces designed to add colour, character and an artisan-made touch to everyday spaces.',
+    guidance: 'Product descriptions include care advice and details for each piece. Follow those instructions to help care for your wooden decor.'
+  },
+  {
+    slug: 'infant-toddler-toys',
+    collection: 'Infant and toddler',
+    title: 'Wooden Toys for Infants and Toddlers | Gombe',
+    description: 'Explore Gombe’s infant and toddler collection of handcrafted wooden toys from Channapatna. Review age guidance and product details before choosing.',
+    heading: 'Wooden toys for infants and toddlers',
+    intro: 'Explore wooden play pieces selected for Gombe’s infant and toddler collection, handcrafted in the Channapatna tradition. Product pages provide age guidance and available details to support a considered choice.',
+    guidance: 'Always follow the age guidance and safety information shown for each product, and supervise young children during play.'
+  },
+  {
+    slug: 'handcrafted-gifts',
+    collection: 'Our gift choice',
+    title: 'Handcrafted Wooden Gifts from India | Gombe',
+    description: 'Find handcrafted wooden gifts by Gombe, made in Channapatna, India. Browse colourful artisan-made keepsakes for birthdays and thoughtful moments.',
+    heading: 'Handcrafted wooden gifts',
+    intro: 'Find a thoughtful gift with a story behind it. Gombe brings together handcrafted wooden pieces made in Channapatna, India, for birthdays, celebrations and everyday gestures.',
+    guidance: 'Check each product page for current availability, price and product-specific details. Gift wrapping and a personal note can be selected at checkout where available.'
+  },
+  {
+    slug: 'genz-collection',
+    collection: 'The GenZ',
+    title: 'The GenZ Collection | Contemporary Channapatna Craft | Gombe',
+    description: 'Explore Gombe’s GenZ collection: contemporary wooden designs with roots in Channapatna craft, handcrafted by Indian artisans.',
+    heading: 'The GenZ collection',
+    intro: 'Meet contemporary designs shaped by the craft traditions of Channapatna. Gombe’s GenZ collection brings together expressive wooden pieces that connect artisan skill with a modern point of view.',
+    guidance: 'See each product page for its description, materials, dimensions and care instructions.'
+  },
+  {
+    slug: 'indian-handicrafts',
+    collection: 'Handicrafts',
+    title: 'Handcrafted Indian Wooden Handicrafts | Gombe',
+    description: 'Shop handcrafted Indian wooden handicrafts by Gombe. Discover artisan-made pieces from Channapatna, made with traditional turning and finishing.',
+    heading: 'Handcrafted Indian handicrafts',
+    intro: 'Explore Indian handicrafts made by artisans in Channapatna. This collection celebrates hand-turned wood, careful finishing and the living craft traditions behind objects made for modern homes and gifting.',
+    guidance: 'Product descriptions provide the available details about materials, dimensions and care for each handcrafted piece.'
+  }
+];
 
 app.use(express.json({ limit: '2mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -1034,6 +1099,126 @@ app.get('/shipping-policy', (_req, res) => {
   );
 });
 
+app.get('/collections/:slug', async (req, res) => {
+  const collectionPage = collectionPages.find((page) => page.slug === req.params.slug);
+  if (!collectionPage) {
+    return res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
+  }
+
+  if (!databaseReady && mongoose.connection.readyState !== 0) {
+    res.set('Retry-After', '2');
+    return res.status(503).send(
+      'The product catalog is still loading. Please try again shortly.'
+    );
+  }
+
+  try {
+    const products = databaseReady
+      ? await Product.find({ productCollection: collectionPage.collection }).sort({ createdAt: -1 }).lean()
+      : catalog.filter((product) =>
+        (product.productCollection || 'Children toys') === collectionPage.collection
+      );
+
+    const escapeHtml = (value = '') =>
+      String(value).replace(/[&<>"']/g, (char) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      })[char]);
+
+    const canonicalUrl = `https://commitmint.in/collections/${collectionPage.slug}`;
+    const collectionLinks = collectionPages.map((page) =>
+      `<li><a href="/collections/${page.slug}">${escapeHtml(page.heading)}</a></li>`
+    ).join('');
+
+    const productCards = products.map((product) => {
+      const imagePath = product.imageUrl || product.images?.[0] || '';
+      let imageUrl = '';
+      if (/^\/(?:uploads\/[a-f0-9]{32}\.(?:jpg|png|webp)|api\/product-images\/[a-f0-9]{24})$/i.test(imagePath)) {
+        imageUrl = imagePath;
+      } else {
+        try {
+          const parsedImageUrl = new URL(imagePath);
+          if (parsedImageUrl.protocol === 'https:') imageUrl = parsedImageUrl.href;
+        } catch {
+          imageUrl = '';
+        }
+      }
+
+      const image = imageUrl
+        ? `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(product.name)}" loading="lazy">`
+        : '<span class="collection-product-image-placeholder">Handcrafted in Channapatna</span>';
+
+      const formattedPrice = new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: 'INR',
+        maximumFractionDigits: 0
+      }).format(Number(product.price));
+
+      return `
+        <article class="collection-product-card">
+          <a class="collection-product-image" href="/products/${encodeURIComponent(product.slug)}">
+            ${image}
+          </a>
+          <div class="collection-product-details">
+            <a class="collection-product-name" href="/products/${encodeURIComponent(product.slug)}">${escapeHtml(product.name)}</a>
+            <span class="collection-product-price">${escapeHtml(formattedPrice)}</span>
+            <span class="collection-product-variant">${escapeHtml(product.variant || 'Handcrafted wooden piece')}</span>
+          </div>
+        </article>`;
+    }).join('');
+
+    const productList = productCards
+      ? `<section aria-label="${escapeHtml(collectionPage.heading)} products"><div class="collection-page-products">${productCards}</div></section>`
+      : `<p class="collection-empty">We’re currently curating this collection. In the meantime, <a href="/#collection">explore all handcrafted products</a> from Gombe.</p>`;
+
+    const structuredData = {
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      name: collectionPage.heading,
+      description: collectionPage.description,
+      url: canonicalUrl,
+      isPartOf: {
+        '@type': 'WebSite',
+        name: 'Gombe',
+        url: 'https://commitmint.in/'
+      },
+      mainEntity: {
+        '@type': 'ItemList',
+        numberOfItems: products.length,
+        itemListElement: products.map((product, index) => ({
+          '@type': 'ListItem',
+          position: index + 1,
+          url: `https://commitmint.in/products/${encodeURIComponent(product.slug)}`,
+          name: product.name
+        }))
+      }
+    };
+
+    const template = await readFile(
+      path.join(__dirname, 'public', 'collection-page.html'),
+      'utf8'
+    );
+    const renderedPage = template
+      .replaceAll('{{TITLE}}', escapeHtml(collectionPage.title))
+      .replaceAll('{{DESCRIPTION}}', escapeHtml(collectionPage.description))
+      .replaceAll('{{CANONICAL}}', escapeHtml(canonicalUrl))
+      .replaceAll('{{HEADING}}', escapeHtml(collectionPage.heading))
+      .replaceAll('{{INTRO}}', escapeHtml(collectionPage.intro))
+      .replaceAll('{{GUIDANCE}}', escapeHtml(collectionPage.guidance))
+      .replace('{{PRODUCTS}}', productList)
+      .replace('{{COLLECTION_LINKS}}', collectionLinks)
+      .replace('{{STRUCTURED_DATA}}', `<script type="application/ld+json">${JSON.stringify(structuredData).replace(/</g, '\\u003c')}</script>`);
+
+    res.status(200).type('html').send(renderedPage);
+  } catch (error) {
+    console.error('Unable to render collection page:', error);
+    res.status(500).send('Unable to load this collection right now.');
+  }
+});
+
 // SEO-friendly product pages
 app.get('/products/:slug', async (req, res) => {
   if (!databaseReady && mongoose.connection.readyState !== 0) {
@@ -1244,6 +1429,9 @@ app.get('/sitemap.xml', async (_req, res) => {
     const urls = [
         { loc: 'https://commitmint.in/' },
         { loc: 'https://commitmint.in/shipping-policy' },
+        ...collectionPages.map((page) => ({
+          loc: `https://commitmint.in/collections/${page.slug}`
+        })),
         ...products.map((product) => ({
           loc: `https://commitmint.in/products/${encodeURIComponent(product.slug)}`,
           lastmod: product.updatedAt

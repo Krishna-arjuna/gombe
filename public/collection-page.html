@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="{{DESCRIPTION}}">
+  <link rel="canonical" href="{{CANONICAL}}">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Gombe">
+  <meta property="og:title" content="{{TITLE}}">
+  <meta property="og:description" content="{{DESCRIPTION}}">
+  <meta property="og:url" content="{{CANONICAL}}">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="{{TITLE}}">
+  <meta name="twitter:description" content="{{DESCRIPTION}}">
+  <title>{{TITLE}}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/enhancements.css">
+  <style>
+    .collection-page-header{display:flex;align-items:center;justify-content:space-between;padding:24px 6vw;border-bottom:1px solid var(--line)}
+    .collection-page-logo{font:500 24px var(--serif);letter-spacing:.22em}
+    .collection-page-header a:last-child,.collection-breadcrumb a,.collection-links a{font-size:13px;text-decoration:underline;text-underline-offset:4px}
+    .collection-page-main{max-width:1320px;min-height:60vh;margin:0 auto;padding:48px 6vw 88px}
+    .collection-breadcrumb{display:flex;gap:10px;margin-bottom:44px;color:#626862;font-size:12px}
+    .collection-page-main h1{max-width:900px;margin:0 0 20px;font:500 clamp(38px,6vw,76px)/1.04 var(--serif);letter-spacing:-.045em}
+    .collection-page-intro{max-width:760px;margin:0 0 16px;font-size:17px;line-height:1.75}
+    .collection-page-guidance{max-width:760px;margin:0 0 48px;color:#626862;line-height:1.7}
+    .collection-page-products{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+    .collection-product-card{min-width:0}
+    .collection-product-image{display:grid;place-items:center;aspect-ratio:4/5;overflow:hidden;background:#e9e4da}
+    .collection-product-image img{width:100%;height:100%;object-fit:cover}
+    .collection-product-image-placeholder{color:#626862;font:10px var(--mono);letter-spacing:.08em;text-transform:uppercase}
+    .collection-product-details{display:grid;grid-template-columns:1fr auto;gap:6px;padding:12px 2px 22px}
+    .collection-product-name{font-size:14px;font-weight:600}
+    .collection-product-variant{grid-column:1;color:#626862;font-size:12px}
+    .collection-product-price{font:12px var(--mono)}
+    .collection-empty{max-width:700px;padding:24px;background:#f0ece4;line-height:1.7}
+    .collection-links-wrap{margin-top:76px;padding-top:32px;border-top:1px solid var(--line)}
+    .collection-links-wrap h2{font:500 clamp(26px,4vw,40px)/1.1 var(--serif)}
+    .collection-links{display:flex;flex-wrap:wrap;gap:12px 22px;padding:0;list-style:none}
+    .collection-page-footer{padding:24px 6vw;border-top:1px solid var(--line);color:#626862;font-size:12px}
+    @media(max-width:850px){.collection-page-products{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:520px){.collection-page-main{padding:34px 5vw 64px}.collection-breadcrumb{margin-bottom:32px}.collection-page-header{padding:18px 5vw}.collection-product-name{font-size:12px}}
+  </style>
+</head>
+<body>
+  <header class="collection-page-header">
+    <a class="collection-page-logo" href="/" aria-label="Gombe home">GOMBE</a>
+    <a href="/#collection">Shop all products</a>
+  </header>
+  <main class="collection-page-main">
+    <nav class="collection-breadcrumb" aria-label="Breadcrumb">
+      <a href="/">Home</a><span aria-hidden="true">/</span><span>{{HEADING}}</span>
+    </nav>
+    <h1>{{HEADING}}</h1>
+    <p class="collection-page-intro">{{INTRO}}</p>
+    <p class="collection-page-guidance">{{GUIDANCE}}</p>
+    {{PRODUCTS}}
+    <nav class="collection-links-wrap" aria-label="Explore other collections">
+      <h2>Explore more Gombe collections</h2>
+      <ul class="collection-links">{{COLLECTION_LINKS}}</ul>
+    </nav>
+  </main>
+  <footer class="collection-page-footer">Handcrafted in Channapatna, India · <a href="/shipping-policy">Shipping & returns</a></footer>
+  {{STRUCTURED_DATA}}
+</body>
+</html>
