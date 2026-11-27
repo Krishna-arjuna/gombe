@@ -19,6 +19,24 @@ const customerSessionDuration = 30 * 24 * 60 * 60;
 const loginAttempts = new Map();
 const customerAuthAttempts = new Map();
 const productCollections = ['Children toys', 'Home decor and lifestyle', 'Education toys', 'Infant and toddler', 'Our gift choice', 'The GenZ', 'Handicrafts'];
+const productDescriptions = {
+  'tanjiro-kamado': 'A handcrafted wooden character piece inspired by Tanjiro Kamado. Its expressive design makes it a distinctive keepsake for anime fans and a conversation-starting addition to a character collection.',
+  'demon-slayer-kokushibo': 'This wooden character collectible takes inspiration from Kokushibo in Demon Slayer. Display it as part of an anime-inspired collection or use it to start imaginative stories.',
+  'the-cooking-set': 'Invite little chefs to make up their own kitchen stories with this wooden cooking play set. It offers an open-ended starting point for pretend meals, role-play and shared playtime.',
+  'our-old-beyblade': 'A handcrafted wooden spinning-top toy for lively, imaginative play. Set it spinning on a flat surface, make up friendly challenges and enjoy a fresh take on a classic playground pastime.',
+  'the-speedster': 'Made for make-believe races, this wooden racer is ready for journeys across imaginary tracks and around the home. Its simple, playful design lets children invent the route and the story.',
+  'slow-and-steady': 'A playful wooden keepsake inspired by the joy of taking the scenic route. Bring it into imaginative journeys, storytelling and everyday play, or keep it nearby as a reminder that steady has its own kind of speed.',
+  'tiny-express': 'Send this little wooden express on a journey of its own. A travel-inspired play piece for inventing destinations, telling stories and bringing a touch of make-believe to playtime.',
+  'the-little-flight': 'A handcrafted wooden play piece for little explorers with big imaginations. Take it on make-believe journeys, invent new destinations and let each playtime begin a different story.',
+  'kili-the-everyday-companion': 'KILI is a handcrafted wooden nest for keeping everyday little things together. Its useful, characterful design brings the warmth of Channapatna craft to a desk, shelf or favourite corner.',
+  'abhara-the-keeper-of-treasures': 'ABHARA is a handcrafted wooden jewellery box with floral lacquer detailing. Keep small keepsakes together and bring a touch of Channapatna-inspired artistry to a bedside table or dressing space.',
+  'lekha-the-desk-companion': 'LEKHA is a handcrafted wooden desk organizer with a pen holder. Give stationery a considered home and add an artisan-made accent to a study table, work desk or gifting moment.',
+  'dinara': 'DINARA is a reusable wooden calendar inspired by the everyday rhythm of time. Its enduring format offers a simple way to mark the passing days and makes a thoughtful addition to a desk or shelf.',
+  'rasika-the-essence-of-flavour': 'RASIKA draws inspiration from the colours, aromas and flavours at the heart of Indian culinary heritage. This handcrafted wooden piece celebrates food, culture and the creativity found in everyday kitchen stories.',
+  'aarohi': 'AAROHI features colourful wooden rings arranged to suggest growth and upward movement. Its thoughtful form makes it a bright addition to a play space and a keepsake inspired by progress, one step at a time.',
+  'mayura': 'MAYURA takes its inspiration from the Indian peacock, a symbol of beauty, grace and artistic expression. This handcrafted wooden piece brings a familiar motif and colourful character to play or display.',
+  'nadika': 'NADIKA is inspired by the meeting of traditional craftsmanship and thoughtful design. Its handcrafted character celebrates the makers and the living craft traditions of Channapatna.'
+};
 const collectionPages = [
   {
     slug: 'children-toys',
@@ -205,12 +223,12 @@ const SupportRequest = mongoose.model('SupportRequest', supportRequestSchema);
 const NewsletterSubscriber = mongoose.model('NewsletterSubscriber', newsletterSubscriberSchema);
 
 const catalog = [
-  { name: 'Rani & Raja', slug: 'rani-raja', price: 68, style: 'Classic', ageGroup: '3+ years', color: 'red', variant: 'Set of 2', badge: 'Bestseller', imageClass: 'royal', rating: 4.9, reviews: 132 },
-  { name: 'Dancing Peacock', slug: 'dancing-peacock', price: 42, style: 'Animal friends', ageGroup: '3+ years', color: 'blue', variant: 'Hand carved', badge: 'New', imageClass: 'peacock', rating: 4.8, reviews: 76 },
-  { name: 'Wobble Family', slug: 'wobble-family', price: 58, style: 'Playful', ageGroup: '1+ years', color: 'yellow', variant: 'Set of 3', badge: '', imageClass: 'wobble', rating: 5, reviews: 48 },
-  { name: 'The Little Menagerie', slug: 'little-menagerie', price: 76, style: 'Animal friends', ageGroup: '3+ years', color: 'green', variant: 'Set of 5', badge: 'Gift ready', imageClass: 'menagerie', rating: 4.9, reviews: 91 },
-  { name: 'Storyteller Set', slug: 'storyteller-set', price: 84, style: 'Classic', ageGroup: '6+ years', color: 'red', variant: 'Set of 4', badge: '', imageClass: 'story', rating: 4.8, reviews: 42 },
-  { name: 'Tiny Top Trio', slug: 'tiny-top-trio', price: 36, style: 'Playful', ageGroup: '1+ years', color: 'yellow', variant: 'Set of 3', badge: 'Small joy', imageClass: 'tops', rating: 4.9, reviews: 65 }
+  { name: 'Rani & Raja', slug: 'rani-raja', price: 68, style: 'Classic', ageGroup: '3+ years', color: 'red', variant: 'Set of 2', badge: 'Bestseller', imageClass: 'royal', description: 'Meet Rani and Raja, a hand-turned pair made for stories, pretend adventures and keepsake shelves. Their classic character brings a little colour and Channapatna-inspired craft to playtime.', rating: 4.9, reviews: 132 },
+  { name: 'Dancing Peacock', slug: 'dancing-peacock', price: 42, style: 'Animal friends', ageGroup: '3+ years', color: 'blue', variant: 'Hand carved', badge: 'New', imageClass: 'peacock', description: 'Inspired by the graceful peacock, this hand-carved wooden friend brings an animal story to life. A colourful character for imaginative play, thoughtful gifting or a small display of Indian craft.', rating: 4.8, reviews: 76 },
+  { name: 'Wobble Family', slug: 'wobble-family', price: 58, style: 'Playful', ageGroup: '1+ years', color: 'yellow', variant: 'Set of 3', badge: '', imageClass: 'wobble', description: 'Three wooden companions make up the Wobble Family, ready to join little stories and everyday play. Their playful set format invites children to imagine characters, friendships and adventures.', rating: 5, reviews: 48 },
+  { name: 'The Little Menagerie', slug: 'little-menagerie', price: 76, style: 'Animal friends', ageGroup: '3+ years', color: 'green', variant: 'Set of 5', badge: 'Gift ready', imageClass: 'menagerie', description: 'A cast of five wooden animal friends brings The Little Menagerie to life. Gather them for make-believe adventures, story time or a thoughtful gift with a handcrafted feel.', rating: 4.9, reviews: 91 },
+  { name: 'Storyteller Set', slug: 'storyteller-set', price: 84, style: 'Classic', ageGroup: '6+ years', color: 'red', variant: 'Set of 4', badge: '', imageClass: 'story', description: 'Four wooden characters give the Storyteller Set its own little world. Arrange them, invent a beginning and let each play session become a new story to share.', rating: 4.8, reviews: 42 },
+  { name: 'Tiny Top Trio', slug: 'tiny-top-trio', price: 36, style: 'Playful', ageGroup: '1+ years', color: 'yellow', variant: 'Set of 3', badge: 'Small joy', imageClass: 'tops', description: 'The Tiny Top Trio brings three small spinning tops together for a quick moment of play. Set them in motion on a flat surface and see whose top keeps turning the longest.', rating: 4.9, reviews: 65 }
 ];
 
 function adminIsConfigured() {
@@ -421,8 +439,23 @@ if (process.env.MONGODB_URI) {
         { productCollection: { $nin: productCollections } },
         { $set: { productCollection: 'Children toys' } }
       );
-      databaseReady = true;
       if (await Product.countDocuments() === 0) await Product.insertMany(catalog);
+      await Product.bulkWrite(
+        Object.entries(productDescriptions).map(([slug, description]) => ({
+          updateOne: {
+            filter: {
+              slug,
+              $or: [
+                { description: { $exists: false } },
+                { description: null },
+                { description: { $regex: /^\s*$/ } }
+              ]
+            },
+            update: { $set: { description } }
+          }
+        }))
+      );
+      databaseReady = true;
       console.log('Connected to MongoDB');
     })
     .catch((error) => console.warn(`MongoDB unavailable or product setup failed; serving demo catalog. ${error.message}`));
